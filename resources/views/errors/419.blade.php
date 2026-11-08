@@ -1,0 +1,1 @@
+@include('errors.minimal-page', ['code' => 419, 'title' => 'Page expired', 'message' => 'This page was open for too long. Please go back, refresh the page and try again.', 'link' => url()->previous(), 'linkText' => 'Go back and refresh'])
