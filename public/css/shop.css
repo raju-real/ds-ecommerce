@@ -182,8 +182,20 @@ img { max-width: 100%; }
 .trust-list { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; font-size: .84rem; }
 .trust-list li { display: flex; gap: .5rem; align-items: center; color: var(--muted); }
 .trust-list i { color: var(--success); }
-.description { line-height: 1.75; }
-.description img { height: auto; border-radius: 10px; }
+/* Product description (rich text from the editor). Nothing inside may be wider than the page:
+   large editor images, fixed pixel widths from pasted content, long links and wide tables all shrink/wrap. */
+.description { line-height: 1.75; overflow-wrap: anywhere; min-width: 0; }
+.description::after { content: ""; display: table; clear: both; } /* floated images stay inside */
+.description :where(p, div, section, article, figure, blockquote, ul, ol, li, h2, h3, h4, pre) { width: auto !important; max-width: 100% !important; } /* pasted fixed widths: fit the page instead */
+.description img, .description video { max-width: 100% !important; height: auto !important; border-radius: 10px; }
+.description iframe { max-width: 100% !important; width: 100%; height: auto; aspect-ratio: 16 / 9; border: 0; border-radius: 10px; }
+.description pre { white-space: pre-wrap; max-width: 100%; }
+.description table { width: 100% !important; max-width: 100%; margin-bottom: 1rem; }
+.description td, .description th { border: 1px solid var(--line); padding: .5rem .7rem; }
+.description blockquote { border-left: 4px solid var(--brand); background: var(--brand-50); padding: .8rem 1.1rem; border-radius: 0 10px 10px 0; }
+.description .note-float-left { float: left; margin: 0 1rem .5rem 0; max-width: 50% !important; }
+.description .note-float-right { float: right; margin: 0 0 .5rem 1rem; max-width: 50% !important; }
+@media (max-width: 575.98px) { .description .note-float-left, .description .note-float-right { float: none; margin: 0 0 .75rem; max-width: 100% !important; } }
 .nav-pills-line .nav-link { border-radius: 0; color: var(--muted); font-weight: 600; border-bottom: 2px solid transparent; padding: .8rem 1rem; }
 .nav-pills-line .nav-link.active { background: none; color: var(--brand); border-color: var(--brand); }
 
@@ -361,7 +373,9 @@ img { max-width: 100%; }
 .blog-content h2, .blog-content h3, .blog-content h4 { font-weight: 700; margin: 1.6em 0 .6em; line-height: 1.3; color: var(--ink); }
 .blog-content h2 { font-size: 1.45rem; } .blog-content h3 { font-size: 1.2rem; } .blog-content h4 { font-size: 1.05rem; }
 .blog-content p { margin-bottom: 1.1em; }
-.blog-content img { max-width: 100%; height: auto; border-radius: 10px; }
+.blog-content :where(p, div, section, article, figure, blockquote, ul, ol, li, h2, h3, h4, pre) { width: auto !important; max-width: 100% !important; } /* pasted fixed widths: fit the page instead */
+.blog-content img, .blog-content video { max-width: 100% !important; height: auto !important; border-radius: 10px; }
+.blog-content pre { white-space: pre-wrap; }
 .blog-content iframe { max-width: 100%; aspect-ratio: 16 / 9; height: auto; border: 0; border-radius: 10px; }
 .blog-content blockquote { border-left: 4px solid var(--brand); background: var(--brand-50); padding: .8rem 1.1rem; border-radius: 0 10px 10px 0; color: #334155; }
 .blog-content a:not(.blog-ref) { text-decoration: underline; text-underline-offset: 2px; }
