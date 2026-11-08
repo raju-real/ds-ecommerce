@@ -66,7 +66,7 @@
             <div class="row g-3 row-cols-2 row-cols-lg-4">
                 <div class="col"><div class="feature"><i class="bi bi-truck"></i><div><h6>Nationwide Delivery</h6><p>All 64 districts</p></div></div></div>
                 <div class="col"><div class="feature"><i class="bi bi-cash-coin"></i><div><h6>Cash on Delivery</h6><p>Pay when you receive</p></div></div></div>
-                <div class="col"><div class="feature"><i class="bi bi-arrow-repeat"></i><div><h6>Easy Replacement</h6><p>7 days guarantee</p></div></div></div>
+                <div class="col"><div class="feature"><i class="bi bi-box-seam"></i><div><h6>Check Before Pay</h6><p>See the product first</p></div></div></div>
                 <div class="col"><div class="feature"><i class="bi bi-headset"></i><div><h6>Support</h6><p>{{ setting('phone', 'Always here to help') }}</p></div></div></div>
             </div>
         </div>

@@ -67,7 +67,7 @@
         <div class="pd-card mt-4">
             <ul class="nav nav-pills-line border-bottom mb-4" role="tablist">
                 <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-desc" type="button" role="tab">Description</button></li>
-                <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-delivery" type="button" role="tab">Delivery & Returns</button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-delivery" type="button" role="tab">Delivery & Payment</button></li>
             </ul>
             <div class="tab-content">
                 <div class="tab-pane fade show active description" id="tab-desc" role="tabpanel">
@@ -79,7 +79,7 @@
                         <li>Delivery charge depends on your district and is shown at checkout.</li>
                         <li>Usual delivery time: Dhaka 1–3 days, outside Dhaka 3–5 days.</li>
                         <li>Pay cash to the delivery person after checking the product.</li>
-                        <li>Wrong or damaged product? Contact us within 7 days for a replacement.</li>
+                        <li>Track your order any time from “Track Order” with your order number and mobile number.</li>
                     </ul>
                 </div>
             </div>

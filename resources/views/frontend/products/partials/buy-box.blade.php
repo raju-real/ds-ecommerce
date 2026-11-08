@@ -82,7 +82,7 @@
             <li><i class="bi bi-patch-check-fill"></i> 100% quality checked</li>
             <li><i class="bi bi-cash-coin"></i> Cash on delivery</li>
             <li><i class="bi bi-truck"></i> Delivery in 2–5 days</li>
-            <li><i class="bi bi-arrow-repeat"></i> 7 days replacement</li>
+            <li><i class="bi bi-box-seam"></i> Check before you pay</li>
         </ul>
     </div>
 </div>
