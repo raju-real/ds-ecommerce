@@ -98,6 +98,33 @@
         showError(input, msg);
     }
 
+    /* Large photos are scaled down in the browser before upload (data-fit="WxH" = the size the server keeps;
+     * the image still covers that box, so the server's crop/resize loses nothing). A 5 MB phone photo becomes
+     * a few hundred KB: uploads are fast and stay under the web server's request limit (nginx: 1 MB by default).
+     * The server still resizes and converts every image. */
+    const SHRINK_OVER = 400 * 1024;   // smaller files are sent as they are
+    const TARGET = 900 * 1024;        // aim for each image to be under this
+    const QUALITIES = [0.9, 0.82, 0.72, 0.6];
+    function shrink(file, fit) {
+        const [fw, fh] = fit.split('x').map(Number);
+        if (!fw || !fh || file.size <= SHRINK_OVER || !window.createImageBitmap) return Promise.resolve(file);
+        return createImageBitmap(file).then((bmp) => {
+            const scale = Math.min(1, Math.max(fw / bmp.width, fh / bmp.height));
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.round(bmp.width * scale);
+            canvas.height = Math.round(bmp.height * scale);
+            canvas.getContext('2d').drawImage(bmp, 0, 0, canvas.width, canvas.height);
+            bmp.close && bmp.close();
+            const encode = (k) => new Promise((resolve) => canvas.toBlob(resolve, 'image/webp', QUALITIES[k])).then((blob) => {
+                // WebP keeps transparency (logos). Browsers that cannot encode WebP hand back PNG — keep the original then.
+                if (!blob || blob.type !== 'image/webp') return null;
+                return blob.size > TARGET && k + 1 < QUALITIES.length ? encode(k + 1) : blob;
+            });
+            return encode(0).then((blob) => (!blob || blob.size >= file.size ? file
+                : new File([blob], file.name.replace(/\.[^.]+$/, '') + '.webp', { type: 'image/webp', lastModified: Date.now() })));
+        }).catch(() => file);
+    }
+
     $(document).on('change', 'input[type=file][data-max-size]', function (e) {
         const input = this;
         const files = Array.from(input.files || []);
@@ -112,21 +139,49 @@
         if (maxFiles && files.length > maxFiles) msg = `You can upload at most ${maxFiles} images at a time (selected ${files.length}).`;
         const badType = files.find((f) => !extOk(f, accept) || !f.type.startsWith('image/'));
         if (!msg && badType) msg = `“${badType.name}” is not allowed. Use ${accept.replace(/\./g, '').toUpperCase().replace(/,/g, ', ')}.`;
-        const tooBig = files.find((f) => f.size > maxKb * 1024);
-        if (!msg && tooBig) msg = `“${tooBig.name}” is ${(tooBig.size / 1048576).toFixed(1)}MB. Maximum size is ${(maxKb / 1024).toFixed(1)}MB.`;
 
         if (msg) { e.stopImmediatePropagation(); rejectFiles(input, msg); return; }
         showError(input, null);
 
         const minW = parseInt(input.dataset.minWidth || '0', 10);
         const minH = parseInt(input.dataset.minHeight || '0', 10);
-        if (minW || minH) {
-            Promise.all(files.map(imageSize)).then((sizes) => {
-                const i = sizes.findIndex(([w, h]) => w < minW || h < minH);
-                if (i >= 0) rejectFiles(input, `“${files[i].name}” is ${sizes[i][0]}×${sizes[i][1]}px. Minimum is ${minW}×${minH}px.`);
+        const fit = input.dataset.fit;
+        const tooBigMsg = (f) => `“${f.name}” is ${(f.size / 1048576).toFixed(1)}MB. Maximum size is ${(maxKb / 1024).toFixed(1)}MB.`;
+
+        const token = input._token = {};
+        input._pending = Promise.all(files.map(imageSize)).then((sizes) => {
+            if (input._token !== token) return;
+            const i = sizes.findIndex(([w, h]) => w < minW || h < minH);
+            if ((minW || minH) && i >= 0) {
+                rejectFiles(input, `“${files[i].name}” is ${sizes[i][0]}×${sizes[i][1]}px. Minimum is ${minW}×${minH}px.`);
+                return;
+            }
+            return Promise.all(files.map((f) => (fit ? shrink(f, fit) : f))).then((out) => {
+                if (input._token !== token) return; // another file was picked meanwhile
+                const tooBig = out.findIndex((f) => f.size > maxKb * 1024);
+                if (tooBig >= 0) { rejectFiles(input, tooBigMsg(files[tooBig])); return; }
+                if (out.some((f, k) => f !== files[k]) && window.DataTransfer) {
+                    try {
+                        const dt = new DataTransfer();
+                        out.forEach((f) => dt.items.add(f));
+                        input.files = dt.files; // does not fire "change" again
+                    } catch (err) { /* very old browser: the original files are uploaded */ }
+                }
             });
-        }
+        }).finally(() => { input._pending = null; });
     });
+
+    // A form submitted while its images are still being prepared waits for them, then submits itself.
+    document.addEventListener('submit', (e) => {
+        const form = e.target;
+        if (!(form instanceof HTMLFormElement)) return;
+        const pending = Array.from(form.querySelectorAll('input[type=file]')).map((i) => i._pending).filter(Boolean);
+        if (!pending.length) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        const submitter = e.submitter && e.submitter.form === form ? e.submitter : undefined;
+        Promise.all(pending).then(() => (form.requestSubmit ? form.requestSubmit(submitter) : form.submit()));
+    }, true);
 
     /* ---------------- Character counters */
     function count(el) {

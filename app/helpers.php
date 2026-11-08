@@ -58,6 +58,17 @@ if (! function_exists('upload_attrs')) {
         if ($min = $cfg['min'][$type] ?? null) {
             $attrs .= ' data-min-width="'.$min[0].'" data-min-height="'.$min[1].'"';
         }
+        // Largest size the server keeps: the browser scales bigger photos down to this before uploading,
+        // so a 5 MB phone photo goes up as a few hundred KB (fast, and under web-server upload limits).
+        $img = config('shop.images');
+        $fit = [
+            'thumbnail' => $img['product']['large'], 'product' => $img['product']['large'],
+            'category' => $img['category'], 'brand' => $img['category'], 'slider' => $img['slider'],
+            'logo' => $img['logo'], 'og_image' => $img['blog']['large'], 'blog' => $img['blog']['large'],
+        ][$type] ?? null;
+        if ($fit) {
+            $attrs .= ' data-fit="'.$fit[0].'x'.$fit[1].'"';
+        }
 
         return $attrs;
     }
