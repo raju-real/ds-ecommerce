@@ -14,6 +14,14 @@ class TrustProxies extends Middleware
      */
     protected $proxies;
 
+    public function __construct()
+    {
+        // Behind Cloudflare / a load balancer set TRUSTED_PROXIES (e.g. "*" or comma-separated IPs) so
+        // HTTPS and the real host are detected. Off by default: trusting every proxy lets clients fake their IP.
+        $proxies = env('TRUSTED_PROXIES');
+        $this->proxies = $proxies === '*' ? '*' : ($proxies ? array_map('trim', explode(',', $proxies)) : null);
+    }
+
     /**
      * The headers that should be used to detect proxies.
      *

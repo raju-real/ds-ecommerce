@@ -123,6 +123,19 @@
     })();
     window.Tip = Tip;
 
+    /* ================================================================== Same-site AJAX */
+    // Links printed by the server may say http:// while the page is https:// (or www./no-www): browsers block
+    // such requests. Same-site requests always go to the address the page was opened on.
+    $.ajaxPrefilter((options) => {
+        try {
+            const u = new URL(options.url, location.href);
+            const bare = (h) => h.replace(/^www\./, '');
+            if (u.origin !== location.origin && bare(u.hostname) === bare(location.hostname)) {
+                options.url = location.origin + u.pathname + u.search + u.hash;
+            }
+        } catch (e) { /* leave unusual URLs alone */ }
+    });
+
     /* ================================================================== Clipboard */
     // navigator.clipboard needs https (or localhost); plain-http sites use the textarea fallback.
     window.copyText = function (text) {

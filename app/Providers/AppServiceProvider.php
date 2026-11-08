@@ -7,6 +7,7 @@ use App\Repositories\OrderRepository;
 use App\Repositories\SettingRepository;
 use App\Services\CartService;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -32,6 +33,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         Paginator::useBootstrapFive();
+
+        // A site configured for https must never write http:// links (blocked as "mixed content" by browsers,
+        // e.g. quick view and add-to-cart requests), even when the proxy in front does not say it is https.
+        if (str_starts_with((string) config('app.url'), 'https://')) {
+            URL::forceScheme('https');
+        }
 
         // Shared storefront data, resolved once per request (menu comes from cache).
         $shared = null;

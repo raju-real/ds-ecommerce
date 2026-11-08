@@ -103,8 +103,27 @@
         const $modal = $('#quickViewModal');
         $modal.find('.modal-body').html('<div class="row g-4 p-2"><div class="col-md-6"><div class="skeleton" style="aspect-ratio:1"></div></div><div class="col-md-6"><div class="skeleton mb-3" style="height:32px"></div><div class="skeleton mb-3" style="height:24px;width:40%"></div><div class="skeleton" style="height:120px"></div></div></div>');
         bootstrap.Modal.getOrCreateInstance($modal[0]).show();
-        $.get($(this).data('quick-view'), (html) => $modal.find('.modal-body').html(html))
-            .fail(() => $modal.find('.modal-body').html('<div class="empty-state"><i class="bi bi-exclamation-circle"></i>Could not load product.</div>'));
+        const url = $(this).data('quick-view');
+        const productUrl = url.replace(/\/quick-view(\?.*)?$/, '');
+        // One silent retry (a dropped connection, a server busy for a moment) before showing the message.
+        const load = (attempt) => $.ajax({ url, timeout: 15000 })
+            .done((html) => $modal.find('.modal-body').html(html))
+            .fail((xhr) => {
+                if (attempt < 2 && xhr.status !== 404) return load(attempt + 1);
+                const gone = xhr.status === 404;
+                $modal.find('.modal-body').html(`
+                    <div class="empty-state py-4">
+                        <i class="bi bi-exclamation-circle"></i>
+                        <div class="fw-semibold mb-1">${gone ? 'This product is no longer available.' : 'Could not load the product preview.'}</div>
+                        <div class="small text-muted mb-3">${gone ? 'Please browse our other products.' : 'Please check your connection and try again.'}</div>
+                        <div class="d-flex flex-wrap justify-content-center gap-2">
+                            ${gone ? '' : '<button type="button" class="btn btn-outline-primary" data-qv-retry><i class="bi bi-arrow-clockwise me-1"></i>Try again</button>'}
+                            <a href="${gone ? S.productsUrl || '#' : productUrl}" class="btn btn-primary">${gone ? 'Browse products' : 'Open product page'}</a>
+                        </div>
+                    </div>`);
+                $modal.find('[data-qv-retry]').one('click', () => { $modal.find('.modal-body').html('<div class="p-5 text-center"><span class="spinner-border text-primary"></span></div>'); load(1); });
+            });
+        load(1);
     });
 
     /* ---------------------------------------------------------- Gallery */
