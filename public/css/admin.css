@@ -445,3 +445,16 @@ a { text-decoration: none; }
 .code-check .similar { font-size: .82rem; margin-top: .4rem; }
 .code-check .similar a { display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom; }
 .fp-home { white-space: nowrap; }
+
+/* Editor full-screen mode: a solid white page above everything (sidebar, top bar, menus), toolbar on top,
+   text area filling the rest and scrolling inside; the page behind does not scroll. */
+.note-editor.note-frame.fullscreen { position: fixed !important; inset: 0; width: 100% !important; height: 100vh; height: 100dvh; z-index: 1085;
+    background: #fff; border: 0 !important; border-radius: 0; display: flex; flex-direction: column; }
+.note-editor.note-frame.fullscreen .note-toolbar { border-radius: 0; flex-shrink: 0; position: relative; z-index: 2; box-shadow: 0 1px 0 #e2e8f0; }
+.note-editor.note-frame.fullscreen .note-editing-area { flex: 1 1 auto; min-height: 0; overflow-y: auto; background: #f8fafc; }
+.note-editor.note-frame.fullscreen .note-editable { max-width: 960px; margin: 0 auto; background: #fff; padding: 2rem 2.25rem; box-shadow: 0 0 0 1px #e2e8f0; }
+.note-editor.note-frame.fullscreen .note-codable { height: 100% !important; }
+.note-editor.note-frame.fullscreen .note-statusbar, .note-editor.note-frame.fullscreen .note-resizebar { display: none; }
+.note-editor.note-frame.fullscreen .note-placeholder { padding: 2rem 2.25rem; left: 50%; transform: translateX(-50%); width: 100%; max-width: 960px; }
+@media (max-width: 575px) { .note-editor.note-frame.fullscreen .note-editable { padding: 1rem; } .note-editor.note-frame.fullscreen .note-placeholder { padding: 1rem; } }
+body:has(.note-editor.fullscreen) { overflow: hidden; }
