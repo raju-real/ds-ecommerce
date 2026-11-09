@@ -29,7 +29,6 @@
         @endif
 
         <div class="d-flex flex-wrap gap-3 small text-muted mb-3">
-            <span>Code: <strong class="text-dark">{{ $product->code }}</strong></span>
             @if($product->brand)
                 <span>Brand: <a href="{{ route('brand.show', $product->brand->slug) }}" class="fw-semibold">{{ $product->brand->name }}</a></span>
             @endif
