@@ -69,6 +69,7 @@
                                     <div class="min-w-0">
                                         <a href="{{ route('admin.products.show', $p->unique_id) }}" class="title d-block text-truncate cell-title">{{ $p->name }}</a>
                                         <div class="d-flex align-items-center gap-2"><span class="small text-muted">{{ $p->code }}</span>@include('admin.products.partials.seo-status')</div>
+                                        @if($p->updated_at)<div class="row-updated" title="Last updated {{ $p->updated_at->format('d M Y, h:i A') }}"><i class="bi bi-clock-history me-1"></i>Updated {{ $p->updated_at->format('d M Y') }}</div>@endif
                                     </div>
                                 </div>
                             </td>

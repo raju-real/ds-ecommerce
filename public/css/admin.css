@@ -469,3 +469,4 @@ body:has(.note-editor.fullscreen) { overflow: hidden; }
 
 .seo-status:hover .seo-dot { box-shadow: 0 0 0 1px currentColor; }
 .seo-card { scroll-margin-top: 80px; }
+.row-updated { font-size: 11px; color: #94a3b8; margin-top: 2px; white-space: nowrap; }

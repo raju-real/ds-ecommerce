@@ -159,11 +159,11 @@ class ProductRepository
 
     public function adminPaginate(array $filters)
     {
-        // "v2": rows now carry the SEO lengths, so pages cached before the update are never read.
-        $key = 'admin:list:v2:'.ModelCache::hash($filters + ['page' => request('page', 1)]);
+        // "v3": rows now carry the SEO lengths and updated_at, so pages cached before the update are never read.
+        $key = 'admin:list:v3:'.ModelCache::hash($filters + ['page' => request('page', 1)]);
 
         return ModelCache::rememberList([ModelCache::PRODUCTS], $key, fn () => Product::query()
-            ->select(array_merge(self::CARD_COLUMNS, ['vendor_id', 'drop_shipping_price', 'is_active', 'meta_image']))
+            ->select(array_merge(self::CARD_COLUMNS, ['vendor_id', 'drop_shipping_price', 'is_active', 'meta_image', 'updated_at']))
             // SEO status column: only the lengths, not the texts, to keep the cached page light.
             ->selectRaw("CHAR_LENGTH(TRIM(COALESCE(meta_title, ''))) as seo_title_len, CHAR_LENGTH(TRIM(COALESCE(meta_description, ''))) as seo_desc_len, IF(TRIM(COALESCE(meta_keywords, '')) = '', 0, CHAR_LENGTH(meta_keywords) - CHAR_LENGTH(REPLACE(meta_keywords, ',', '')) + 1) as seo_kw_count")
             ->with(['category:id,name', 'subcategory:id,name', 'vendor:id,name', 'brand:id,name'])
