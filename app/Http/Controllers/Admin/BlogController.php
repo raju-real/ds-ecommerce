@@ -7,6 +7,7 @@ use App\Models\Blog;
 use App\Repositories\BlogRepository;
 use App\Services\ImageService;
 use App\Support\RichText;
+use App\Support\Seo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
@@ -108,13 +109,13 @@ class BlogController extends Controller
             'description' => 'required|string|max:200000',
             'image' => upload_rules('blog', ! $blog?->image),
             'published_at' => 'nullable|date_format:Y-m-d',
-            'meta_title' => 'nullable|string|max:70',
-            'meta_description' => 'nullable|string|max:160',
+            ...Seo::rules(),
         ], [
             'image.required' => 'Please choose a cover image.',
             'image.dimensions' => 'Cover image must be at least '.implode('×', config('shop.uploads.min.blog')).' pixels.',
             'image.max' => 'Cover image must be smaller than '.round(config('shop.uploads.blog') / 1024, 1).'MB.',
             'description.required' => 'Please write the blog description.',
+            ...Seo::messages(),
         ]);
 
         $data['description'] = RichText::sanitize($data['description']);
@@ -133,6 +134,6 @@ class BlogController extends Controller
         $data['is_active'] = $request->boolean('is_active');
         unset($data['image']);
 
-        return $data;
+        return Seo::apply($request, $data, $blog, 'blogs');
     }
 }

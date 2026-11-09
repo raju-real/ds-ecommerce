@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Repositories\SettingRepository;
 use App\Services\ImageService;
+use App\Support\Seo;
 use Illuminate\Http\Request;
 
 class SettingController extends Controller
@@ -45,7 +46,8 @@ class SettingController extends Controller
             'tiktok' => 'nullable|url|max:255', 'messenger' => 'nullable|url|max:255',
             'meta_title' => 'nullable|string|max:70',
             'meta_description' => 'nullable|string|max:160',
-            'meta_keywords' => 'nullable|string|max:255',
+            'meta_keywords' => 'nullable|array|max:'.Seo::MAX_KEYWORDS,
+            'meta_keywords.*' => 'nullable|string|max:60',
             'google_analytics_id' => ['nullable', 'string', 'max:30', 'regex:/^(G|UA)-[A-Z0-9\-]+$/'],
             'facebook_pixel_id' => 'nullable|digits_between:10,20',
             'sms_driver' => 'nullable|in:log,http',
@@ -63,6 +65,9 @@ class SettingController extends Controller
         ]);
 
         $values = $request->only(array_merge(...array_values(self::FIELDS)));
+        if ($request->has('meta_keywords_present')) {
+            $values['meta_keywords'] = Seo::keywords($request->input('meta_keywords', [])); // tags → "a, b, c"
+        }
 
         $uploads = [
             'logo' => [config('shop.images.logo'), 'max', 'webp'],

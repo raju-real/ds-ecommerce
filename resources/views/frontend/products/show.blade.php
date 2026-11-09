@@ -3,7 +3,10 @@
 @section('title', $product->meta_title ?: $product->name)
 @section('description', $product->meta_description ?: ($product->short_description ?: strip_tags($product->description)))
 @section('og_type', 'product')
-@section('og_image', $product->image_url)
+@section('og_image', $product->meta_image ? img_url($product->meta_image) : $product->image_url)
+@if($product->meta_keywords)
+    @section('keywords', $product->meta_keywords)
+@endif
 @section('canonical', $product->url)
 
 @push('head')

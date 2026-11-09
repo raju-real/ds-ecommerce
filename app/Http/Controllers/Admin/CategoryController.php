@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Repositories\CategoryRepository;
 use App\Services\ImageService;
 use App\Support\ModelCache;
+use App\Support\Seo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -60,7 +61,7 @@ class CategoryController extends Controller
 
     public function create()
     {
-        return view('admin.categories.form', ['category' => new Category(['is_active' => true])]);
+        return view('admin.categories.form', ['category' => new Category(['is_active' => true, 'sort_order' => Category::nextSortOrder()])]);
     }
 
     public function store(Request $request)
@@ -84,7 +85,7 @@ class CategoryController extends Controller
     public function update(Request $request, string $category)
     {
         $model = Category::findByUidOrFail($category);
-        $data = $this->validated($request, $model->id);
+        $data = $this->validated($request, $model);
         $data['slug'] = Category::uniqueSlug(($data['slug'] ?? null) ?: $data['name'], $model->id);
 
         if ($request->hasFile('image')) {
@@ -114,20 +115,19 @@ class CategoryController extends Controller
         return back()->with('success', 'Category deleted.');
     }
 
-    protected function validated(Request $request, ?int $id = null): array
+    protected function validated(Request $request, ?Category $model = null): array
     {
         $data = $request->validate([
             'name' => 'required|string|min:2|max:120',
             'slug' => 'nullable|alpha_dash|max:150',
             'sort_order' => 'nullable|integer|min:0|max:9999',
             'image' => upload_rules('category'),
-            'meta_title' => 'nullable|string|max:70',
-            'meta_description' => 'nullable|string|max:160',
-        ]);
+            ...Seo::rules(),
+        ], Seo::messages());
         unset($data['image']);
-        $data['sort_order'] = $data['sort_order'] ?? 0;
+        $data['sort_order'] ??= $model?->sort_order ?? Category::nextSortOrder(); // empty: keep it / add at the end
         $data['is_active'] = $request->boolean('is_active');
 
-        return $data;
+        return Seo::apply($request, $data, $model, 'categories');
     }
 }

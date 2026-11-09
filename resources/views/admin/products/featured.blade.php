@@ -15,7 +15,7 @@
     <div class="card mb-4" style="overflow: visible">
         <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
             <h5><i class="bi bi-plus-circle me-1 text-primary"></i> Add a product to featured</h5>
-            <span class="small text-muted">Home page: newest {{ config('shop.home.featured') }} first, {{ config('shop.home.featured') }} more per “Load more”, up to {{ config('shop.home.featured_max') }}; then “View all”.</span>
+            <span class="small text-muted">New products go to the top of the list. Home page: first {{ config('shop.home.featured') }}, {{ config('shop.home.featured') }} more per “Load more”, up to {{ config('shop.home.featured_max') }}; then “View all”.</span>
         </div>
         <div class="card-body">
             <div class="fp-picker" id="fpPicker" data-url="{{ route('admin.products.featured.search') }}" data-add-url="{{ route('admin.products.featured.add', 'aaaaaaaaaa') }}">
@@ -33,25 +33,36 @@
     {{-- Current featured products --}}
     <div class="card">
         <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
-            <h5>Currently featured</h5>
+            <div>
+                <h5>Featured list <span class="small text-muted fw-normal ms-1" id="fpLive">{{ $featured->where('is_featured', true)->count() }} shown on home</span></h5>
+                <div class="small text-muted mt-1"><i class="bi bi-grip-vertical"></i> Drag rows to set the home-page order · the switch hides a product from home without removing it from this list.</div>
+            </div>
             <input type="search" class="form-control form-control-sm" id="fpFilter" placeholder="Filter this list…" maxlength="100" style="max-width: 260px">
         </div>
         <div class="table-responsive">
-            <table class="table table-hover align-middle">
+            <table class="table table-hover align-middle fp-table">
                 <thead>
                     <tr>
-                        <th>Product</th><th>Category / Vendor</th><th class="text-end">Unit price</th><th class="text-end">Discount</th>
-                        <th class="text-center" title="Orders that include this product">Orders</th><th>Status</th><th class="text-end">Actions</th>
+                        <th class="fp-handle-col" aria-label="Order"></th>
+                        <th>Product</th><th>Category / Vendor</th><th class="text-end">Price</th>
+                        <th class="text-center" title="Orders that include this product">Orders</th>
+                        <th title="Show this product in the Featured section of the home page">On home</th>
+                        <th class="text-end">Actions</th>
                     </tr>
                 </thead>
-                <tbody id="featuredBody">
+                <tbody id="featuredBody" data-sort-url="{{ route('admin.products.featured.sort') }}">
                     @include('admin.products.partials.featured-rows')
                 </tbody>
             </table>
         </div>
         <div class="card-footer small text-muted d-none" id="fpNoMatch">No featured product matches this filter.</div>
+        <div class="card-footer small text-muted d-none" id="fpSortOff"><i class="bi bi-info-circle me-1"></i>Clear the filter to drag and reorder.</div>
     </div>
 @endsection
+
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+@endpush
 
 @push('page-scripts')
     <script>
@@ -157,10 +168,35 @@
             function applyList(res, highlightUid) {
                 $('#featuredBody').html(res.rows);
                 $('#featuredCount').text(res.count);
+                $('#fpLive').text(`${res.live} shown on home`);
                 $('#fpFilter').trigger('input');
                 if (highlightUid) $(`#featuredBody tr[data-uid="${highlightUid}"]`).addClass('row-flash');
                 cache.clear(); // featured flags changed
             }
+
+            // Drag & drop order (whole list, saved at once). Disabled while the list is filtered.
+            const body = document.getElementById('featuredBody');
+            const sortable = window.Sortable ? Sortable.create(body, {
+                handle: '.fp-handle', draggable: 'tr[data-uid]', animation: 150, ghostClass: 'sortable-ghost',
+                onEnd(evt) {
+                    if (evt.oldIndex === evt.newIndex) return;
+                    const ids = Array.from(body.querySelectorAll('tr[data-uid]')).map((tr) => tr.dataset.uid);
+                    sortable.option('disabled', true);
+                    $.ajax({ url: body.dataset.sortUrl, method: 'POST', contentType: 'application/json', data: JSON.stringify({ ids }) })
+                        .done((res) => { applyList(res); notify(res.message); })
+                        .fail(() => { notify('Could not save the order — the list was reloaded', 'error'); setTimeout(() => location.reload(), 1200); })
+                        .always(() => sortable.option('disabled', !!$('#fpFilter').val().trim()));
+                },
+            }) : null;
+
+            // On / off switch: hide from (or show again on) the home page, keeping the product in the list.
+            $(document).on('change', '[data-featured-toggle]', function () {
+                const el = this;
+                el.disabled = true;
+                $.ajax({ url: el.dataset.featuredToggle, method: 'PATCH' })
+                    .done((res) => { applyList(res, $(el).closest('tr').data('uid')); notify(res.message); })
+                    .fail(() => { el.checked = !el.checked; el.disabled = false; notify('Could not update the product', 'error'); });
+            });
 
             // Add from the dropdown
             $panel.on('click', '[data-add]', function (e) {
@@ -182,7 +218,7 @@
                 const $btn = $(this);
                 Swal.fire({
                     title: 'Remove from featured?',
-                    text: `“${$btn.data('name')}” will no longer appear in the Featured section.`,
+                    text: `“${$btn.data('name')}” will be taken out of this list. To only hide it from the home page, use the switch instead.`,
                     icon: 'question', showCancelButton: true, confirmButtonText: 'Remove', confirmButtonColor: '#dc2626', reverseButtons: true,
                 }).then((r) => {
                     if (!r.isConfirmed) return;
@@ -203,6 +239,10 @@
                     shown += ok;
                 });
                 $('#fpNoMatch').toggleClass('d-none', !ws.length || shown > 0);
+                // Reordering a filtered list would hide where rows really go.
+                if (sortable) sortable.option('disabled', ws.length > 0);
+                $('#fpSortOff').toggleClass('d-none', !ws.length || !shown);
+                $('.fp-table').toggleClass('sort-off', ws.length > 0);
             });
         })(jQuery);
     </script>

@@ -57,19 +57,7 @@
                     </div>
                 </div>
 
-                <div class="card">
-                    <div class="card-header"><h5>Search engine &amp; sharing</h5></div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label class="form-label" for="meta_title">Meta title</label>
-                            <input type="text" name="meta_title" id="meta_title" class="form-control" value="{{ old('meta_title', $blog->meta_title) }}" maxlength="70" placeholder="Defaults to the post title" data-counter>
-                        </div>
-                        <div>
-                            <label class="form-label" for="meta_description">Meta description</label>
-                            <textarea name="meta_description" id="meta_description" rows="2" class="form-control" maxlength="160" placeholder="Defaults to the first lines of the post (~155 characters)" data-counter>{{ old('meta_description', $blog->meta_description) }}</textarea>
-                        </div>
-                    </div>
-                </div>
+                @include('admin.partials.seo-fields', ['model' => $blog, 'titleHint' => 'Defaults to the post title', 'descHint' => 'Defaults to the first lines of the post (~155 characters)', 'imageHint' => 'Leave empty to use the cover image.'])
             </div>
 
             <div class="col-xl-4">

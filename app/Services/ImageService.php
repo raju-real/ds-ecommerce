@@ -42,7 +42,7 @@ class ImageService
     public function delete(?string ...$paths): void
     {
         foreach (array_filter($paths) as $path) {
-            File::delete(public_path('uploads/'.$path));
+            File::delete($this->root().'/'.$path);
         }
     }
 
@@ -138,9 +138,15 @@ class ImageService
         return $img;
     }
 
+    /** public/uploads (the "uploads" disk root; an isolated test copy may point it elsewhere). */
+    protected function root(): string
+    {
+        return rtrim((string) config('filesystems.disks.uploads.root', public_path('uploads')), '/\\');
+    }
+
     protected function write($img, string $relative): string
     {
-        $full = public_path('uploads/'.$relative);
+        $full = $this->root().'/'.$relative;
         File::ensureDirectoryExists(dirname($full));
 
         match (pathinfo($full, PATHINFO_EXTENSION)) {

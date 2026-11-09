@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\FlushesModelCache;
+use App\Models\Concerns\HasSortOrder;
 use App\Models\Concerns\HasUniqueId;
 use App\Support\ModelCache;
 use Illuminate\Database\Eloquent\Model;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Slider extends Model
 {
-    use FlushesModelCache, HasUniqueId, SoftDeletes;
+    use FlushesModelCache, HasSortOrder, HasUniqueId, SoftDeletes;
 
     protected static array $cacheGroups = [ModelCache::SLIDERS];
 

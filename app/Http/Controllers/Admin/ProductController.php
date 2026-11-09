@@ -12,6 +12,7 @@ use App\Repositories\ProductRepository;
 use App\Repositories\VendorRepository;
 use App\Services\ImageService;
 use App\Support\RichText;
+use App\Support\Seo;
 use App\Support\UniqueId;
 use App\Support\ModelCache;
 use Illuminate\Http\Request;
@@ -117,11 +118,59 @@ class ProductController extends Controller
         return response()->json(['ok' => true, 'value' => $model->{$field}]);
     }
 
-    /* ---------------------------------------------------------------- Featured products manager */
+    /** "Does this product code exist?" box on the Add product form: exact match + similar codes (cached catalogue). */
+    public function checkCode(Request $request)
+    {
+        $code = trim((string) $request->validate(['code' => 'required|string|max:60'])['code']);
+        $needle = mb_strtolower($code);
+        $catalog = $this->products->adminCatalog();
+        $row = fn (array $p) => [
+            'code' => $p['code'], 'name' => $p['name'], 'thumb' => img_url($p['thumbnail']), 'active' => $p['is_active'],
+            'edit_url' => route('admin.products.edit', $p['uid']), 'view_url' => route('admin.products.show', $p['uid']),
+        ];
+        $exact = $catalog->first(fn ($p) => mb_strtolower((string) $p['code']) === $needle);
+        $similar = $catalog->filter(fn ($p) => $p['uid'] !== ($exact['uid'] ?? null) && str_contains(mb_strtolower((string) $p['code']), $needle))->take(5);
+
+        return response()->json([
+            'code' => $code,
+            'exists' => (bool) $exact,
+            'product' => $exact ? $row($exact) : null,
+            'similar' => $similar->map($row)->values(),
+        ]);
+    }
+
+    /* ---------------------------------------------------------------- Featured products manager
+     * featured_order = place in the list (NULL = not listed); is_featured = shown on the home page.
+     * A listed product can be switched off (stays in the list, hidden from home) and back on. */
 
     public function featured()
     {
         return view('admin.products.featured', ['featured' => $this->products->adminFeatured()]);
+    }
+
+    /** Drag & drop order: {ids: [uid, …]} → featured_order 1, 2, 3 … (only products in the list). */
+    public function featuredSort(Request $request)
+    {
+        $ids = $request->validate(['ids' => 'required|array|max:5000', 'ids.*' => ['string', 'regex:/^'.UniqueId::PATTERN.'$/']])['ids'];
+
+        DB::transaction(function () use ($ids) {
+            foreach (array_values(array_unique($ids)) as $i => $uid) {
+                DB::table('products')->where('unique_id', $uid)->whereNotNull('featured_order')->update(['featured_order' => $i + 1]);
+            }
+        });
+        ModelCache::bump(ModelCache::PRODUCTS); // one refresh for the whole new order (home page, lists)
+
+        return $this->featuredResponse('Order saved. The home page shows the new order.');
+    }
+
+    /** Switch: show on the home page or not, keeping the product (and its place) in the list. */
+    public function featuredToggle(string $product)
+    {
+        $model = Product::findByUidOrFail($product);
+        abort_if($model->featured_order === null, 404);
+        $model->update(['is_featured' => ! $model->is_featured]);
+
+        return $this->featuredResponse($model->is_featured ? "“{$model->name}” is shown on the home page again." : "“{$model->name}” is switched off — hidden from the home page, kept in this list.");
     }
 
     /** Picker results from the cached catalogue (name, code, category, subcategory, vendor, brand). */
@@ -147,20 +196,29 @@ class ProductController extends Controller
         return $this->setFeatured($product, false);
     }
 
+    /** Add: listed at the top and shown on home (no-op if already shown). Remove: off the list entirely. */
     protected function setFeatured(string $uid, bool $value)
     {
         $model = Product::findByUidOrFail($uid);
-        if ($model->is_featured !== $value) {
-            $model->update(['is_featured' => $value]);
+        if ($value && ! $model->is_featured) {
+            $model->update(['is_featured' => true]); // Product::saving puts it at the top when not listed yet
+        } elseif (! $value && ($model->is_featured || $model->featured_order !== null)) {
+            $model->update(['is_featured' => false, 'featured_order' => null]);
         }
 
-        // The whole list is re-rendered: order and "on home" badges of other rows can shift.
+        return $this->featuredResponse($value ? "“{$model->name}” added to featured." : "“{$model->name}” removed from featured.");
+    }
+
+    /** The whole list is re-rendered: order and "on home" badges of other rows can shift. */
+    protected function featuredResponse(string $message)
+    {
         $featured = $this->products->adminFeatured();
 
         return response()->json([
             'ok' => true,
-            'message' => $value ? "“{$model->name}” added to featured." : "“{$model->name}” removed from featured.",
+            'message' => $message,
             'count' => $featured->count(),
+            'live' => $featured->where('is_featured', true)->count(),
             'rows' => view('admin.products.partials.featured-rows', compact('featured'))->render(),
         ]);
     }
@@ -258,8 +316,7 @@ class ProductController extends Controller
             'discount_price' => 'nullable|numeric|min:1|lt:unit_price',
             'drop_shipping_price' => 'required|numeric|min:0|max:9999999',
             'vendor_product_url' => 'nullable|url|max:255',
-            'meta_title' => 'nullable|string|max:70',
-            'meta_description' => 'nullable|string|max:160',
+            ...Seo::rules(),
             'thumbnail' => upload_rules('thumbnail', ! $product?->thumbnail),
             'images' => 'nullable|array|max:'.config('shop.uploads.product_files'),
             'images.*' => upload_rules('product', true),
@@ -274,9 +331,11 @@ class ProductController extends Controller
             'images.*.mimes' => 'Images must be JPG, PNG or WebP.',
             'discount_price.lt' => 'Discount price must be lower than the regular price.',
             'subcategory_id.exists' => 'The subcategory does not belong to the selected category.',
+            ...Seo::messages(),
         ]);
 
         unset($data['images'], $data['thumbnail']);
+        $data = Seo::apply($request, $data, $product, 'products');
         $data['description'] = isset($data['description']) ? RichText::sanitize($data['description']) : null;
         foreach (['is_active', 'is_featured', 'in_stock'] as $flag) {
             $data[$flag] = $request->boolean($flag);

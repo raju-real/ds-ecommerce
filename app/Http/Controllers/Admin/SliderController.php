@@ -21,7 +21,7 @@ class SliderController extends Controller
 
     public function create()
     {
-        return view('admin.sliders.form', ['slider' => new Slider(['is_active' => true])]);
+        return view('admin.sliders.form', ['slider' => new Slider(['is_active' => true, 'sort_order' => Slider::nextSortOrder()])]);
     }
 
     public function store(Request $request)
@@ -73,7 +73,7 @@ class SliderController extends Controller
             'image.dimensions' => 'Banner must be at least '.implode('×', config('shop.uploads.min.slider')).' pixels.',
         ]);
         unset($data['image']);
-        $data['sort_order'] = $data['sort_order'] ?? 0;
+        $data['sort_order'] ??= ($uid = $request->route('slider')) ? Slider::where('unique_id', $uid)->value('sort_order') : Slider::nextSortOrder();
         $data['is_active'] = $request->boolean('is_active');
 
         return $data;

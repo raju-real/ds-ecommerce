@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\FlushesModelCache;
+use App\Models\Concerns\HasSortOrder;
 use App\Models\Concerns\HasUniqueId;
 use App\Models\Concerns\HasUniqueSlug;
 use App\Support\ModelCache;
@@ -11,12 +12,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Category extends Model
 {
-    use FlushesModelCache, HasUniqueSlug, HasUniqueId, SoftDeletes;
+    use FlushesModelCache, HasSortOrder, HasUniqueSlug, HasUniqueId, SoftDeletes;
 
     // Products embed their category, so both groups go stale together.
     protected static array $cacheGroups = [ModelCache::CATEGORIES, ModelCache::PRODUCTS];
 
-    protected $fillable = ['name', 'slug', 'image', 'sort_order', 'is_active', 'meta_title', 'meta_description'];
+    protected $fillable = ['name', 'slug', 'image', 'sort_order', 'is_active', 'meta_title', 'meta_description', 'meta_keywords', 'meta_image'];
 
     protected $casts = ['is_active' => 'boolean'];
 

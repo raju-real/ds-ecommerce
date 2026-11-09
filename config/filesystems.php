@@ -38,7 +38,7 @@ return [
         // Served directly from /public/uploads (no storage:link needed).
         'uploads' => [
             'driver' => 'local',
-            'root' => public_path('uploads'),
+            'root' => env('UPLOADS_ROOT', public_path('uploads')), // UPLOADS_ROOT: only for an isolated test copy
             'url' => env('APP_URL').'/uploads',
             'visibility' => 'public',
         ],

@@ -32,7 +32,7 @@ class ProductRepository
     }
 
     /**
-     * Home page featured products, one "Load more" step per page (newest first).
+     * Home page featured products in the order set on the Featured Products page, one "Load more" step per page.
      * Never goes past shop.home.featured_max; each page is cached on its own.
      *
      * @return array{items: Collection, page: int, loaded: int, total: int, has_more: bool, reached_max: bool}
@@ -45,8 +45,8 @@ class ProductRepository
         $offset = ($page - 1) * $per;
         $take = max(0, min($per, $max - $offset));
 
-        $items = $take === 0 ? collect() : ModelCache::remember(ModelCache::PRODUCTS, "home:featured:$per:$page", fn () => $this->cardQuery()
-            ->where('is_featured', true)->latest('id')->skip($offset)->take($take)->get());
+        $items = $take === 0 ? collect() : ModelCache::remember(ModelCache::PRODUCTS, "home:featured:v2:$per:$page", fn () => $this->cardQuery()
+            ->where('is_featured', true)->orderByRaw('featured_order IS NULL')->orderBy('featured_order')->latest('id')->skip($offset)->take($take)->get());
         $total = ModelCache::remember(ModelCache::PRODUCTS, 'home:featured:count', fn () => $this->cardQuery()->where('is_featured', true)->count());
         $loaded = min($offset + $items->count(), $total);
 
@@ -84,7 +84,9 @@ class ProductRepository
                 'price_desc' => $query->orderByRaw(self::PRICE_SQL.' desc'),
                 'name_asc' => $query->orderBy('name'),
                 'discount' => $query->orderByRaw('CASE WHEN discount_price > 0 AND discount_price < unit_price THEN (unit_price - discount_price) / unit_price ELSE 0 END desc'),
-                default => $query->latest('id'),
+                default => ! empty($filters['featured'])
+                    ? $query->orderByRaw('featured_order IS NULL')->orderBy('featured_order')->latest('id')
+                    : $query->latest('id'),
             };
 
             return $query->paginate(config('shop.per_page.frontend'));
@@ -119,7 +121,7 @@ class ProductRepository
         $like = '%'.like_escape($term).'%';
 
         return $query->where(fn ($w) => $w->where('name', 'like', $like)
-            ->orWhere('code', 'like', $like)->orWhere('short_description', 'like', $like));
+            ->orWhere('code', 'like', $like)->orWhere('short_description', 'like', $like)->orWhere('meta_keywords', 'like', $like));
     }
 
     /** Active product by id (cart / checkout). */
@@ -188,9 +190,10 @@ class ProductRepository
      */
     public function adminCatalog(): Collection
     {
-        return ModelCache::remember([ModelCache::PRODUCTS, ModelCache::ORDERS, ModelCache::CATEGORIES, ModelCache::VENDORS, ModelCache::BRANDS], 'admin:catalog', fn () => Product::query()
+        // "v2": rows now carry featured_order/listed, so copies cached before the update are never read.
+        return ModelCache::remember([ModelCache::PRODUCTS, ModelCache::ORDERS, ModelCache::CATEGORIES, ModelCache::VENDORS, ModelCache::BRANDS], 'admin:catalog:v2', fn () => Product::query()
             ->select(['id', 'unique_id', 'name', 'code', 'slug', 'thumbnail', 'category_id', 'subcategory_id', 'vendor_id', 'brand_id',
-                'unit_price', 'discount_price', 'is_featured', 'is_active', 'in_stock', 'created_at'])
+                'unit_price', 'discount_price', 'is_featured', 'featured_order', 'is_active', 'in_stock', 'created_at'])
             ->addSelect(['orders_count' => OrderItem::query()->selectRaw('COUNT(DISTINCT order_id)')
                 ->whereColumn('order_items.product_id', 'products.id')->whereHas('order')])
             ->with(['category:id,name', 'subcategory:id,name', 'vendor:id,name', 'brand:id,name'])
@@ -210,6 +213,8 @@ class ProductRepository
                 'unit_price' => $p->unit_price,
                 'discount_price' => $p->hasDiscount() ? $p->discount_price : null,
                 'is_featured' => $p->is_featured,
+                'featured_order' => $p->featured_order,
+                'listed' => $p->featured_order !== null || $p->is_featured, // in the featured list (switched on or off)
                 'is_active' => $p->is_active,
                 'in_stock' => $p->in_stock,
                 'orders' => (int) $p->orders_count,
@@ -220,19 +225,23 @@ class ProductRepository
     }
 
     /**
-     * Featured products in home-page order (newest first). home_position is the place on the home page
-     * (1-based, active products only): the first 12 show at once, up to featured_max via "Load more".
+     * The featured list in its manual order (drag & drop), switched-off products included.
+     * home_position is the place on the home page (1-based, switched on + active only): the first 12 show
+     * at once, up to featured_max via "Load more".
      */
     public function adminFeatured(): Collection
     {
         $position = 0;
 
-        return $this->adminCatalog()->where('is_featured', true)->values()->map(function ($p) use (&$position) {
-            $p['home_position'] = $p['is_active'] ? ++$position : null;
-            $p['on_home'] = $p['home_position'] !== null && $p['home_position'] <= config('shop.home.featured');
+        return $this->adminCatalog()->where('listed', true)
+            ->sortBy(fn ($p) => [$p['featured_order'] === null ? 1 : 0, $p['featured_order'] ?? 0, -$p['id']])
+            ->values()
+            ->map(function ($p) use (&$position) {
+                $p['home_position'] = $p['is_featured'] && $p['is_active'] ? ++$position : null;
+                $p['on_home'] = $p['home_position'] !== null && $p['home_position'] <= config('shop.home.featured');
 
-            return $p;
-        });
+                return $p;
+            });
     }
 
     /**
@@ -252,7 +261,7 @@ class ProductRepository
                     fn ($a, $b) => str_starts_with(mb_strtolower($b['name']), $words[0]) <=> str_starts_with(mb_strtolower($a['name']), $words[0]),
                     fn ($a, $b) => $b['orders'] <=> $a['orders'],
                 ])
-            : $all->where('is_featured', false)->sortByDesc('orders');
+            : $all->where('listed', false)->sortByDesc('orders');
 
         return ['total' => $matches->count(), 'items' => $matches->take($limit)->values()];
     }

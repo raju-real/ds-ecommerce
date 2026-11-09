@@ -21,7 +21,7 @@
                     <div class="row g-3">
                         <div class="col-12">
                             <label class="form-label" for="category_id">Parent category <span class="text-danger">*</span></label>
-                            <select name="category_id" id="category_id" class="form-select select2" required data-placeholder="Select parent category" data-msg-required="Please select a parent category.">
+                            <select name="category_id" id="category_id" class="form-select select2" @unless($editing) data-next-sort='@json($nextSort ?? [])' @endunless required data-placeholder="Select parent category" data-msg-required="Please select a parent category.">
                                 <option></option>
                                 @foreach($categories as $c)<option value="{{ $c->id }}" @selected(old('category_id', $subcategory->category_id) == $c->id)>{{ $c->name }}</option>@endforeach
                             </select>
@@ -53,3 +53,19 @@
         </div>
     </div>
 @endsection
+
+@unless($editing)
+@push('page-scripts')
+    <script>
+        // New subcategory: its sort order defaults to the last position + 1 inside the chosen category (until typed by hand).
+        (function ($) {
+            const $cat = $('#category_id');
+            const $sort = $('#sort_order');
+            const next = $cat.data('next-sort') || {};
+            let typed = false;
+            $sort.on('input', () => { typed = true; });
+            $cat.on('change', function () { if (!typed && this.value) $sort.val(next[this.value] || 1); });
+        })(jQuery);
+    </script>
+@endpush
+@endunless

@@ -23,6 +23,20 @@
         </div>
     </div>
 
+    @unless($editing)
+        {{-- Quick check before adding: is this product code already used? (outside the form, never submitted) --}}
+        <div class="card mb-4 code-check" id="codeCheck" data-url="{{ route('admin.products.check-code') }}">
+            <div class="card-body py-3">
+                <label class="form-label mb-1" for="codeCheckInput"><i class="bi bi-upc-scan me-1 text-primary"></i> Check a product code before adding</label>
+                <div class="input-group">
+                    <input type="search" id="codeCheckInput" class="form-control" placeholder="Type a product code, e.g. DS-0036" maxlength="60" autocomplete="off">
+                    <button type="button" class="btn btn-primary" id="codeCheckBtn" data-no-busy><i class="bi bi-search me-1"></i> Check</button>
+                </div>
+                <div class="result" id="codeCheckResult" aria-live="polite"></div>
+            </div>
+        </div>
+    @endunless
+
     <form method="post" enctype="multipart/form-data" id="productForm" data-validate novalidate action="{{ $editing ? route('admin.products.update', $product->unique_id) : route('admin.products.store') }}">
         @csrf
         @if($editing) @method('PUT') @endif
@@ -105,19 +119,7 @@
                     </div>
                 </div>
 
-                <div class="card">
-                    <div class="card-header"><h5>SEO</h5></div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label class="form-label">Meta title</label>
-                            <input type="text" name="meta_title" class="form-control" value="{{ old('meta_title', $product->meta_title) }}" maxlength="70" placeholder="Defaults to product name" data-counter>
-                        </div>
-                        <div>
-                            <label class="form-label">Meta description</label>
-                            <textarea name="meta_description" rows="2" class="form-control" maxlength="160" placeholder="Defaults to short description (~155 characters)" data-counter>{{ old('meta_description', $product->meta_description) }}</textarea>
-                        </div>
-                    </div>
-                </div>
+                @include('admin.partials.seo-fields', ['model' => $product, 'titleHint' => 'Defaults to the product name', 'descHint' => 'Defaults to the short description (~155 characters)', 'imageHint' => 'Leave empty to use the product thumbnail.'])
             </div>
 
             <div class="col-xl-4">
@@ -266,3 +268,49 @@
         })(jQuery);
     </script>
 @endpush
+
+@unless($editing)
+@push('page-scripts')
+    <script>
+        // "Check a product code": exact match → taken (with a link to that product), otherwise free (+ similar codes).
+        (function ($) {
+            const $box = $('#codeCheck');
+            const $in = $('#codeCheckInput');
+            const $btn = $('#codeCheckBtn');
+            const $out = $('#codeCheckResult');
+            const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+            let seq = 0;
+
+            function check() {
+                const code = $in.val().trim();
+                if (!code) { $out.empty(); $in.trigger('focus'); return; }
+                const mine = ++seq;
+                Busy.start($btn[0], 'Checking…');
+                $.getJSON($box.data('url'), { code }).done((r) => {
+                    if (mine !== seq) return;
+                    const similar = r.similar.length
+                        ? `<div class="similar text-muted">Similar codes: ${r.similar.map((p) => `<a href="${esc(p.edit_url)}" target="_blank" title="${esc(p.name)}">${esc(p.code)}</a>`).join(' · ')}</div>` : '';
+                    $out.html(r.exists
+                        ? `<div class="hit taken"><img src="${esc(r.product.thumb)}" alt="">
+                               <div class="min-w-0"><div class="fw-semibold text-danger"><i class="bi bi-x-circle-fill me-1"></i>“${esc(r.product.code)}” already exists${r.product.active ? '' : ' (inactive product)'}</div>
+                               <div class="small text-truncate">${esc(r.product.name)}</div></div>
+                               <a href="${esc(r.product.edit_url)}" class="btn btn-sm btn-soft-primary flex-shrink-0"><i class="bi bi-pencil me-1"></i>Edit it</a></div>${similar}`
+                        : `<div class="hit free"><i class="bi bi-check-circle-fill fs-5"></i>
+                               <div class="min-w-0 fw-semibold">“${esc(r.code)}” is not used yet — you can add it.</div>
+                               <button type="button" class="btn btn-sm btn-success flex-shrink-0" data-use-code="${esc(r.code)}">Use this code</button></div>${similar}`);
+                }).fail((xhr) => { if (mine === seq) $out.html(`<div class="text-danger small">${esc(xhr.responseJSON?.message || 'Could not check the code. Please try again.')}</div>`); })
+                  .always(() => Busy.stop($btn[0]));
+            }
+
+            $btn.on('click', check);
+            $in.on('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); check(); } })
+               .on('input', () => { if (!$in.val().trim()) $out.empty(); });
+            $out.on('click', '[data-use-code]', function () {
+                const $code = $('#productForm [name="code"]');
+                $code.val(this.dataset.useCode).trigger('input').trigger('change').trigger('focus');
+                notify('Code added to the form');
+            });
+        })(jQuery);
+    </script>
+@endpush
+@endunless

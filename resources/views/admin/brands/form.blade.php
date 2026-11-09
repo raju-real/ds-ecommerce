@@ -37,19 +37,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="card">
-                    <div class="card-header"><h5>SEO</h5></div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label class="form-label" for="meta_title">Meta title</label>
-                            <input type="text" name="meta_title" id="meta_title" class="form-control" value="{{ old('meta_title', $brand->meta_title) }}" placeholder="Defaults to the brand name" maxlength="70" data-counter>
-                        </div>
-                        <div>
-                            <label class="form-label" for="meta_description">Meta description</label>
-                            <textarea name="meta_description" id="meta_description" rows="3" class="form-control" maxlength="160" placeholder="Short summary shown in Google results (~155 characters)" data-counter>{{ old('meta_description', $brand->meta_description) }}</textarea>
-                        </div>
-                    </div>
-                </div>
+                @include('admin.partials.seo-fields', ['model' => $brand, 'titleHint' => 'Defaults to the brand name', 'imageHint' => 'Leave empty to use the brand logo.'])
             </div>
             <div class="col-lg-4">
                 <div class="card mb-4">

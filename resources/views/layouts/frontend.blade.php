@@ -3,6 +3,8 @@
     $pageTitle = trim($__env->yieldContent('title'));
     $metaTitle = $pageTitle ? $pageTitle.' | '.$siteName : setting('meta_title', $siteName);
     $metaDescription = trim($__env->yieldContent('description')) ?: setting('meta_description');
+    // Keywords: the page's own (product, category, brand, blog), else the site keywords from Settings → SEO.
+    $metaKeywords = trim($__env->yieldContent('keywords')) ?: setting('meta_keywords');
     // Share image: the page's own, else the site share image, else the logo.
     $ogImage = trim($__env->yieldContent('og_image')) ?: collect([setting('og_image'), setting('logo')])->filter()->map(fn ($p) => img_url($p))->first();
     $canonical = trim($__env->yieldContent('canonical')) ?: url()->current();
@@ -17,7 +19,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $metaTitle }}</title>
     <meta name="description" content="{{ \Illuminate\Support\Str::limit(strip_tags($metaDescription), 160) }}">
-    @if(setting('meta_keywords'))<meta name="keywords" content="{{ setting('meta_keywords') }}">@endif
+    @if($metaKeywords)<meta name="keywords" content="{{ $metaKeywords }}">@endif
     <meta name="robots" content="@yield('robots', 'index, follow')">
     <link rel="canonical" href="{{ $canonical }}">
     <meta name="theme-color" content="#4f46e5">
@@ -27,8 +29,14 @@
     <meta property="og:title" content="{{ $metaTitle }}">
     <meta property="og:description" content="{{ \Illuminate\Support\Str::limit(strip_tags($metaDescription), 200) }}">
     <meta property="og:url" content="{{ $canonical }}">
-    @if($ogImage)<meta property="og:image" content="{{ $ogImage }}">@endif
+    @if($ogImage)
+        <meta property="og:image" content="{{ $ogImage }}">
+        <meta property="og:image:alt" content="{{ $metaTitle }}">
+    @endif
     <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $metaTitle }}">
+    <meta name="twitter:description" content="{{ \Illuminate\Support\Str::limit(strip_tags($metaDescription), 200) }}">
+    @if($ogImage)<meta name="twitter:image" content="{{ $ogImage }}">@endif
 
     @if(setting('favicon'))
         <link rel="icon" type="image/png" href="{{ img_url(setting('favicon')) }}">

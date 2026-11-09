@@ -75,9 +75,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::controller(Admin\ProductController::class)->prefix('products')->name('products.featured')->group(function () {
             Route::get('featured', 'featured');
             Route::get('featured/search', 'featuredSearch')->name('.search');
+            Route::post('featured/sort', 'featuredSort')->name('.sort');
+            Route::patch('{product}/featured/toggle', 'featuredToggle')->name('.toggle');
             Route::post('{product}/featured', 'feature')->name('.add');
             Route::delete('{product}/featured', 'unfeature')->name('.remove');
         });
+        Route::get('products/check-code', [Admin\ProductController::class, 'checkCode'])->name('products.check-code');
         Route::resource('products', Admin\ProductController::class);
         Route::patch('products/{product}/toggle/{field}', [Admin\ProductController::class, 'toggle'])->name('products.toggle');
         Route::delete('products/{product}/images/{image}', [Admin\ProductController::class, 'destroyImage'])->name('products.images.destroy');
@@ -110,6 +113,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         });
 
         Route::post('editor/images', [Admin\EditorController::class, 'image'])->middleware('throttle:60,1')->name('editor.image');
+        Route::get('seo/keywords', [Admin\SeoController::class, 'keywords'])->name('seo.keywords');
         Route::resource('districts', Admin\DistrictController::class)->except('show');
         Route::resource('thanas', Admin\ThanaController::class)->except('show');
 

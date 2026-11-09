@@ -16,7 +16,7 @@ class Blog extends Model
 
     protected static array $cacheGroups = [ModelCache::BLOGS];
 
-    protected $fillable = ['title', 'slug', 'description', 'excerpt', 'image', 'thumb', 'is_active', 'published_at', 'meta_title', 'meta_description'];
+    protected $fillable = ['title', 'slug', 'description', 'excerpt', 'image', 'thumb', 'is_active', 'published_at', 'meta_title', 'meta_description', 'meta_keywords', 'meta_image'];
 
     protected $casts = [
         'is_active' => 'boolean',

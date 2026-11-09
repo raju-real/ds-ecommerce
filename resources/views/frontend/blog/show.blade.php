@@ -7,7 +7,10 @@
 @section('title', $blog->meta_title ?: $blog->title)
 @section('description', $description)
 @section('og_type', 'article')
-@section('og_image', $blog->image_url)
+@section('og_image', $blog->meta_image ? img_url($blog->meta_image) : $blog->image_url)
+@if($blog->meta_keywords)
+    @section('keywords', $blog->meta_keywords)
+@endif
 @section('canonical', $blog->url)
 
 @push('head')

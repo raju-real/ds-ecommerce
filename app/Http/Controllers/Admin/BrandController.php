@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Brand;
 use App\Repositories\BrandRepository;
 use App\Services\ImageService;
+use App\Support\Seo;
 use Illuminate\Http\Request;
 
 class BrandController extends Controller
@@ -23,7 +24,7 @@ class BrandController extends Controller
 
     public function create()
     {
-        return view('admin.brands.form', ['brand' => new Brand(['is_active' => true])]);
+        return view('admin.brands.form', ['brand' => new Brand(['is_active' => true, 'sort_order' => Brand::nextSortOrder()])]);
     }
 
     public function store(Request $request)
@@ -47,7 +48,7 @@ class BrandController extends Controller
     public function update(Request $request, string $brand)
     {
         $model = Brand::findByUidOrFail($brand);
-        $data = $this->validated($request);
+        $data = $this->validated($request, $model);
         $data['slug'] = Brand::uniqueSlug(($data['slug'] ?? null) ?: $data['name'], $model->id);
 
         if ($request->hasFile('logo')) {
@@ -68,20 +69,19 @@ class BrandController extends Controller
         return back()->with('success', 'Brand deleted. Its products are now without a brand.');
     }
 
-    protected function validated(Request $request): array
+    protected function validated(Request $request, ?Brand $model = null): array
     {
         $data = $request->validate([
             'name' => 'required|string|min:2|max:120',
             'slug' => 'nullable|alpha_dash|max:150',
             'sort_order' => 'nullable|integer|min:0|max:9999',
             'logo' => upload_rules('brand'),
-            'meta_title' => 'nullable|string|max:70',
-            'meta_description' => 'nullable|string|max:160',
-        ]);
+            ...Seo::rules(),
+        ], Seo::messages());
         unset($data['logo']);
-        $data['sort_order'] = $data['sort_order'] ?? 0;
+        $data['sort_order'] ??= $model?->sort_order ?? Brand::nextSortOrder(); // empty: keep it / add at the end
         $data['is_active'] = $request->boolean('is_active');
 
-        return $data;
+        return Seo::apply($request, $data, $model, 'brands');
     }
 }

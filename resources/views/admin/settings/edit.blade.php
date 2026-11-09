@@ -147,7 +147,11 @@
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label" for="meta_keywords">Meta keywords</label>
-                                    <input type="text" name="meta_keywords" id="meta_keywords" class="form-control" value="{{ $v('meta_keywords') }}" placeholder="online shopping, gadgets, fashion" maxlength="255">
+                                    <input type="hidden" name="meta_keywords_present" value="1">
+                                    <select name="meta_keywords[]" id="meta_keywords" class="form-select" multiple data-keywords="{{ route('admin.seo.keywords') }}" data-max="{{ \App\Support\Seo::MAX_KEYWORDS }}" data-placeholder="e.g. online shopping, gadgets — press Enter after each">
+                                        @foreach(\App\Support\Seo::list($v('meta_keywords')) as $word)<option value="{{ $word }}" selected>{{ $word }}</option>@endforeach
+                                    </select>
+                                    <div class="form-text">Used on pages that have no keywords of their own (home, lists). Press <kbd>Enter</kbd> or <kbd>,</kbd> after each keyword.</div>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label" for="google_analytics_id">Google Analytics ID</label>

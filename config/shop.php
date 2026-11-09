@@ -45,7 +45,8 @@ return [
         'logo' => [400, 120],
         'favicon' => [64, 64],
         'blog' => ['large' => [1200, 630], 'thumb' => [600, 315]], // cover cropped to the social-share ratio
-        'editor' => [1200, 1600],                                   // images inside blog/product text, scaled down only
+        'editor' => [1200, 1600],
+        'share' => [1200, 630],                                    // meta (share) image of products, categories, brands, blogs                                   // images inside blog/product text, scaled down only
     ],
 
     /*
@@ -63,6 +64,7 @@ return [
         'logo' => 2048,
         'favicon' => 1024,
         'og_image' => 4096,
+        'meta_image' => 4096,
         'blog' => 4096,
         'editor' => 4096,
 
@@ -71,6 +73,7 @@ return [
             'thumbnail' => [400, 400],
             'blog' => [800, 420],
             'slider' => [1200, 400],
+            'meta_image' => [600, 315],
         ],
 
         // Shown as the upload hint: ideal width x height and aspect ratio.
@@ -83,6 +86,7 @@ return [
             'logo' => [400, 120, 'wide, transparent PNG'],
             'favicon' => [64, 64, '1:1 square'],
             'og_image' => [1200, 630, '1.91:1'],
+            'meta_image' => [1200, 630, '1.91:1 — shown when the link is shared on Facebook/WhatsApp'],
             'blog' => [1200, 630, '1.91:1 — also the Facebook/WhatsApp share image'],
             'editor' => [1200, 800, 'any shape; wider images are scaled to 1200 px'],
         ],

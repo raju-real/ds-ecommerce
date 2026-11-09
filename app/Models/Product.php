@@ -20,6 +20,7 @@ class Product extends Model
         'category_id', 'subcategory_id', 'brand_id', 'vendor_id', 'name', 'code', 'slug', 'short_description',
         'description', 'unit_price', 'discount_price', 'drop_shipping_price', 'vendor_product_url',
         'thumbnail', 'thumbnail_large', 'in_stock', 'is_featured', 'is_active', 'meta_title', 'meta_description',
+        'meta_keywords', 'meta_image', 'featured_order',
     ];
 
     // Never serialised to JSON / arrays that may reach the storefront.
@@ -32,7 +33,19 @@ class Product extends Model
         'in_stock' => 'boolean',
         'is_featured' => 'boolean',
         'is_active' => 'boolean',
+        'featured_order' => 'integer',
     ];
+
+    protected static function booted(): void
+    {
+        // Featured list: featured_order is the place in the list (NULL = not listed); is_featured = shown on the home page.
+        // Switching a product to featured (form, list toggle, featured page) puts it at the top of the list.
+        static::saving(function (Product $p) {
+            if ($p->is_featured && $p->featured_order === null) {
+                $p->featured_order = (int) static::query()->whereNotNull('featured_order')->min('featured_order') - 1;
+            }
+        });
+    }
 
     public function category()
     {

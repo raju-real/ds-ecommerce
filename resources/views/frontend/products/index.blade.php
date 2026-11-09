@@ -11,7 +11,10 @@
 @section('title', $seo?->meta_title ?: $heading.($products->currentPage() > 1 ? ' - Page '.$products->currentPage() : ''))
 @section('description', $seo?->meta_description ?: 'Buy '.$heading.' online at the best price in Bangladesh. Cash on delivery available.')
 @section('canonical', $canonical)
-@if($seoImage = $category?->image ?? $brand?->logo)
+@if($seo?->meta_keywords)
+    @section('keywords', $seo->meta_keywords)
+@endif
+@if($seoImage = $seo?->meta_image ?: ($category?->image ?? $brand?->logo))
     @section('og_image', img_url($seoImage))
 @endif
 @if(!empty($filters['q']) || request()->hasAny(['sort', 'min', 'max', 'stock', 'featured']))

@@ -77,6 +77,76 @@
     });
     initSelect2(document);
 
+    /* Meta keywords: <select multiple data-keywords="suggest-url" data-max="20"> — type and press Enter or comma;
+     * keywords already used on the site are suggested (most used first). */
+    $('select[data-keywords]').each(function () {
+        const $sel = $(this);
+        const clean = (t) => String(t || '').replace(/[<>",]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 60);
+        $sel.select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            tags: true,
+            tokenSeparators: [','],
+            placeholder: $sel.data('placeholder') || 'Type a keyword…',
+            maximumSelectionLength: parseInt($sel.data('max'), 10) || 20,
+            minimumInputLength: 0,
+            dropdownParent: $(document.body),
+            createTag(params) {
+                const text = clean(params.term);
+                if (!text) return null;
+                // Same keyword in another case is the same keyword.
+                const taken = ($sel.val() || []).some((v) => v.toLowerCase() === text.toLowerCase());
+                return taken ? null : { id: text, text, newTag: true };
+            },
+            insertTag(data, tag) { data.unshift(tag); }, // what you type comes first; suggestions below
+            ajax: {
+                url: $sel.data('keywords'),
+                delay: 200,
+                cache: true,
+                data: (p) => ({ q: p.term || '' }),
+                processResults: (rows) => {
+                    const chosen = ($sel.val() || []).map((v) => v.toLowerCase());
+                    return { results: rows.filter((r) => !chosen.includes(r.text.toLowerCase())).map((r) => ({ id: r.text, text: r.text, uses: r.uses })) };
+                },
+            },
+            templateResult(item) {
+                if (item.loading) return item.text;
+                const $row = $('<span>').text(item.text);
+                if (item.newTag) $row.prepend($('<i class="bi bi-plus-circle me-1 text-primary">'));
+                if (item.uses) $row.append($('<span class="kw-uses">').text(`used ${item.uses}×`));
+                return $row;
+            },
+            language: { maximumSelected: (a) => `You can add up to ${a.maximum} keywords.`, noResults: () => 'Type a keyword and press Enter' },
+        });
+
+        // Enter adds what was typed right away — also while suggestions are still loading
+        // (otherwise the text would stay in the box and run into the next keyword).
+        // A suggestion picked with the arrow keys is still chosen by Enter as usual.
+        const max = parseInt($sel.data('max'), 10) || 20;
+        const addTag = (text) => {
+            const current = $sel.val() || [];
+            if (current.some((v) => v.toLowerCase() === text.toLowerCase())) return;
+            if (current.length >= max) { notify(`You can add up to ${max} keywords.`, 'warning'); return; }
+            $sel.append(new Option(text, text, true, true)).trigger('change');
+        };
+        $sel.next('.select2')[0].addEventListener('keydown', (e) => {
+            if (e.key !== 'Enter' || !e.target.classList.contains('select2-search__field')) return;
+            const term = clean(e.target.value);
+            if (!term) return;
+            const $results = $(`#select2-${$sel.attr('id')}-results`);
+            const $hl = $results.find('.select2-results__option--highlighted');
+            const loading = $results.find('.loading-results').length > 0;
+            const hlText = $hl.clone().find('.kw-uses').remove().end().text().trim();
+            if (!loading && $hl.length && hlText.toLowerCase() !== term.toLowerCase()) return; // a suggestion is chosen
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            addTag(term);
+            e.target.value = '';
+            $sel.select2('close');
+            setTimeout(() => $sel.next('.select2').find('.select2-search__field').trigger('focus'), 0);
+        }, true);
+    });
+
     /* Confirm before destructive submit: <form data-confirm="Delete this?"> */
     $(document).on('submit', 'form[data-confirm]', function (e) {
         const form = this;

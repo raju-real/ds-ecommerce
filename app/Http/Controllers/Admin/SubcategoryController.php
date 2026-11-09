@@ -25,8 +25,11 @@ class SubcategoryController extends Controller
     public function create(Request $request)
     {
         return view('admin.subcategories.form', [
-            'subcategory' => new Subcategory(['is_active' => true, 'category_id' => $request->integer('category_id') ?: null]),
+            'subcategory' => new Subcategory(['is_active' => true, 'category_id' => $cat = ($request->integer('category_id') ?: null),
+                'sort_order' => $cat ? Subcategory::nextSortOrder(['category_id' => $cat]) : 1]),
             'categories' => $this->categories->all(),
+            // Next free position per category: the form fills it in when the parent category is picked.
+            'nextSort' => Subcategory::query()->selectRaw('category_id, MAX(sort_order) + 1 as next')->groupBy('category_id')->pluck('next', 'category_id'),
         ]);
     }
 
@@ -80,7 +83,9 @@ class SubcategoryController extends Controller
             'slug' => 'nullable|alpha_dash|max:150',
             'sort_order' => 'nullable|integer|min:0|max:9999',
         ]);
-        $data['sort_order'] = $data['sort_order'] ?? 0;
+        // Empty: keep the current place, or add at the end of the chosen category.
+        $data['sort_order'] ??= ($uid = $request->route('subcategory')) ? Subcategory::where('unique_id', $uid)->value('sort_order')
+            : Subcategory::nextSortOrder(['category_id' => $data['category_id']]);
         $data['is_active'] = $request->boolean('is_active');
 
         return $data;

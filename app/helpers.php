@@ -64,7 +64,7 @@ if (! function_exists('upload_attrs')) {
         $fit = [
             'thumbnail' => $img['product']['large'], 'product' => $img['product']['large'],
             'category' => $img['category'], 'brand' => $img['category'], 'slider' => $img['slider'],
-            'logo' => $img['logo'], 'og_image' => $img['blog']['large'], 'blog' => $img['blog']['large'],
+            'logo' => $img['logo'], 'og_image' => $img['blog']['large'], 'meta_image' => $img['share'], 'blog' => $img['blog']['large'],
         ][$type] ?? null;
         if ($fit) {
             $attrs .= ' data-fit="'.$fit[0].'x'.$fit[1].'"';
