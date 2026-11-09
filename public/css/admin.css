@@ -458,3 +458,14 @@ a { text-decoration: none; }
 .note-editor.note-frame.fullscreen .note-placeholder { padding: 2rem 2.25rem; left: 50%; transform: translateX(-50%); width: 100%; max-width: 960px; }
 @media (max-width: 575px) { .note-editor.note-frame.fullscreen .note-editable { padding: 1rem; } .note-editor.note-frame.fullscreen .note-placeholder { padding: 1rem; } }
 body:has(.note-editor.fullscreen) { overflow: hidden; }
+
+/* Product list: SEO status marks (title · description · keywords · share image) */
+.seo-status { display: inline-flex; gap: 3px; text-decoration: none; white-space: nowrap; vertical-align: middle; }
+.seo-dot { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 4px;
+    font-size: 9.5px; font-weight: 700; line-height: 1; }
+.seo-dot .bi { font-size: 10px; }
+.seo-dot.on { background: #dcfce7; color: #15803d; }
+.seo-dot.off { background: #fee2e2; color: #dc2626; opacity: .75; }
+
+.seo-status:hover .seo-dot { box-shadow: 0 0 0 1px currentColor; }
+.seo-card { scroll-margin-top: 80px; }

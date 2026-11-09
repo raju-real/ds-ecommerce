@@ -68,7 +68,7 @@
                                     <img src="{{ $p->thumb_url }}" class="thumb" alt="" loading="lazy">
                                     <div class="min-w-0">
                                         <a href="{{ route('admin.products.show', $p->unique_id) }}" class="title d-block text-truncate cell-title">{{ $p->name }}</a>
-                                        <span class="small text-muted">{{ $p->code }}</span>
+                                        <div class="d-flex align-items-center gap-2"><span class="small text-muted">{{ $p->code }}</span>@include('admin.products.partials.seo-status')</div>
                                     </div>
                                 </div>
                             </td>

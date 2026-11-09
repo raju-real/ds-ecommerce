@@ -159,10 +159,13 @@ class ProductRepository
 
     public function adminPaginate(array $filters)
     {
-        $key = 'admin:list:'.ModelCache::hash($filters + ['page' => request('page', 1)]);
+        // "v2": rows now carry the SEO lengths, so pages cached before the update are never read.
+        $key = 'admin:list:v2:'.ModelCache::hash($filters + ['page' => request('page', 1)]);
 
         return ModelCache::rememberList([ModelCache::PRODUCTS], $key, fn () => Product::query()
-            ->select(array_merge(self::CARD_COLUMNS, ['vendor_id', 'drop_shipping_price', 'is_active']))
+            ->select(array_merge(self::CARD_COLUMNS, ['vendor_id', 'drop_shipping_price', 'is_active', 'meta_image']))
+            // SEO status column: only the lengths, not the texts, to keep the cached page light.
+            ->selectRaw("CHAR_LENGTH(TRIM(COALESCE(meta_title, ''))) as seo_title_len, CHAR_LENGTH(TRIM(COALESCE(meta_description, ''))) as seo_desc_len, IF(TRIM(COALESCE(meta_keywords, '')) = '', 0, CHAR_LENGTH(meta_keywords) - CHAR_LENGTH(REPLACE(meta_keywords, ',', '')) + 1) as seo_kw_count")
             ->with(['category:id,name', 'subcategory:id,name', 'vendor:id,name', 'brand:id,name'])
             ->when($filters['q'] ?? null, fn ($q, $s) => $q->where(fn ($w) => $w->where('name', 'like', '%'.like_escape($s).'%')->orWhere('code', 'like', '%'.like_escape($s).'%')))
             ->when($filters['category_id'] ?? null, fn ($q, $id) => $q->where('category_id', $id))

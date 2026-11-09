@@ -3,7 +3,7 @@
 @php
     $keywords = \App\Support\Seo::list(old('meta_keywords_present') ? old('meta_keywords', []) : $model->meta_keywords);
 @endphp
-<div class="card seo-card">
+<div class="card seo-card" id="seo">
     <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
         <h5><i class="bi bi-search me-1 text-primary"></i> SEO &amp; sharing <span class="badge badge-soft-secondary ms-1">Optional</span></h5>
         <span class="small text-muted">How this page looks on Google, Facebook and WhatsApp</span>
