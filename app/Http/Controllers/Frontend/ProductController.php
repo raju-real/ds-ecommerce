@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Repositories\BrandRepository;
 use App\Repositories\CategoryRepository;
 use App\Repositories\ProductRepository;
+use App\Services\FacebookPixel;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -44,9 +45,10 @@ class ProductController extends Controller
         return $this->listing($request, null, null, $brand);
     }
 
-    public function show(string $slug)
+    public function show(string $slug, FacebookPixel $pixel)
     {
         $product = $this->products->findBySlug($slug) ?? abort(404);
+        $pixel->track('ViewContent', $pixel->productData($product));
 
         return view('frontend.products.show', [
             'product' => $product,
@@ -54,11 +56,12 @@ class ProductController extends Controller
         ]);
     }
 
-    public function quickView(string $slug)
+    public function quickView(string $slug, FacebookPixel $pixel)
     {
         $product = $this->products->findBySlug($slug) ?? abort(404);
+        $pixel->track('ViewContent', $pixel->productData($product));
 
-        return view('frontend.products.quick-view', compact('product'));
+        return view('frontend.products.quick-view', ['product' => $product, 'fbEvents' => $pixel->pageEvents()]);
     }
 
     protected function listing(Request $request, $category = null, $subcategory = null, $brand = null)
@@ -84,6 +87,9 @@ class ProductController extends Controller
 
         if ($products->currentPage() > 1 && $products->isEmpty()) {
             abort(404);
+        }
+        if ($filters['q'] && $products->currentPage() === 1 && ! $request->ajax()) {
+            app(FacebookPixel::class)->track('Search', array_filter(['search_string' => $filters['q'], 'content_category' => $category?->name]));
         }
 
         return view('frontend.products.index', [

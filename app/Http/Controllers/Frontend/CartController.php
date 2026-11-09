@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Frontend;
 use App\Http\Controllers\Controller;
 use App\Repositories\ProductRepository;
 use App\Services\CartService;
+use App\Services\FacebookPixel;
 use App\Support\Bots;
 use Illuminate\Http\Request;
 
@@ -32,6 +33,10 @@ class CartController extends Controller
         }
 
         $this->cart->add($product->id, $data['qty'] ?? 1);
+
+        // Buy now / no-JS: the page changes, so the browser part fires on the next page (checkout).
+        $pixel = app(FacebookPixel::class);
+        $pixel->track('AddToCart', $pixel->productData($product, $data['qty'] ?? 1), nextPage: $request->boolean('buy_now') || ! $request->expectsJson());
 
         if ($request->boolean('buy_now')) {
             return $request->expectsJson()
@@ -65,6 +70,8 @@ class CartController extends Controller
         // Set (not add) the quantity, so opening the link twice does not double the order.
         $qty = max(1, min(CartService::MAX_QTY, (int) $request->query('qty', 1)));
         $this->cart->set($product->id, $qty);
+        $pixel = app(FacebookPixel::class);
+        $pixel->track('AddToCart', $pixel->productData($product, $qty), nextPage: true);
 
         return redirect()->route('checkout')
             ->with('success', "“{$product->name}” is ready to order.")
@@ -89,7 +96,8 @@ class CartController extends Controller
     protected function respond(Request $request, bool $ok, ?string $message = null)
     {
         if ($request->expectsJson()) {
-            return response()->json(['ok' => $ok, 'message' => $message] + $this->cart->summary(), $ok ? 200 : 422);
+            // 'pixel': this request's Facebook events (e.g. AddToCart), fired by shop.js with the same event IDs.
+            return response()->json(['ok' => $ok, 'message' => $message, 'pixel' => app(FacebookPixel::class)->pageEvents()] + $this->cart->summary(), $ok ? 200 : 422);
         }
 
         return back()->with($ok ? 'success' : 'error', $message);

@@ -82,7 +82,7 @@
                 Busy.stop(this);
                 setCount(res.count);
                 toast(res.message);
-                if (window.fbq) fbq('track', 'AddToCart');
+                if (window.fbPixelFire) window.fbPixelFire(res.pixel); // AddToCart with product, price and event ID
             })
             .fail((xhr) => {
                 Busy.stop(this);

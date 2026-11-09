@@ -138,4 +138,11 @@ return [
     ],
 
     'currency' => '৳',
+
+    // Facebook Conversions API. Pixel ID, token and switches are in Admin → Settings → Facebook.
+    // Meta retires Graph API versions about two years after release; raise this (or set FB_GRAPH_VERSION) when they ask.
+    'facebook' => [
+        'graph_version' => env('FB_GRAPH_VERSION', 'v24.0'),
+        'graph_url' => env('FB_GRAPH_URL', 'https://graph.facebook.com'),
+    ],
 ];

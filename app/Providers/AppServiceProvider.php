@@ -23,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
         // One instance per request so settings are read from cache only once.
         $this->app->singleton(SettingRepository::class);
         $this->app->singleton(CartService::class);
+        $this->app->singleton(\App\Services\FacebookPixel::class); // collects a request's events, sends them once at the end
     }
 
     /**

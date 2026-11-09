@@ -33,6 +33,7 @@
                             <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#branding"><i class="bi bi-palette"></i> Logo & branding</button>
                             <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#contact"><i class="bi bi-telephone"></i> Contact & social</button>
                             <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#seo"><i class="bi bi-search"></i> SEO & tracking</button>
+                            <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#pixel"><i class="bi bi-facebook"></i> Facebook Pixel</button>
                             <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#sms"><i class="bi bi-chat-dots"></i> SMS / OTP</button>
                         </div>
                     </div>
@@ -157,9 +158,8 @@
                                     <label class="form-label" for="google_analytics_id">Google Analytics ID</label>
                                     <input type="text" name="google_analytics_id" id="google_analytics_id" class="form-control" value="{{ $v('google_analytics_id') }}" placeholder="G-XXXXXXXXXX" maxlength="30" pattern="(G|UA)-[A-Z0-9\-]+" data-msg-pattern="Analytics ID looks like G-XXXXXXXXXX.">
                                 </div>
-                                <div class="col-md-6">
-                                    <label class="form-label" for="facebook_pixel_id">Facebook Pixel ID</label>
-                                    <input type="text" name="facebook_pixel_id" id="facebook_pixel_id" class="form-control" value="{{ $v('facebook_pixel_id') }}" placeholder="e.g. 123456789012345" minlength="10" maxlength="20" pattern="[0-9]+" inputmode="numeric" data-digits data-msg-pattern="Pixel ID contains digits only.">
+                                <div class="col-md-6 d-flex align-items-end">
+                                    <div class="form-text mb-2"><i class="bi bi-facebook me-1"></i>Facebook Pixel is on the <a href="#pixel" data-open-tab="#pixel">Facebook Pixel</a> tab.</div>
                                 </div>
                                 <div class="col-12">
                                     <div class="p-3 rounded-3 bg-light small">
@@ -170,6 +170,8 @@
                             </div>
                         </div>
                     </div>
+
+                    @include('admin.settings.facebook')
 
                     <div class="tab-pane fade" id="sms">
                         <div class="card">
@@ -225,6 +227,10 @@
                 const pane = firstError.closest('.tab-pane');
                 bootstrap.Tab.getOrCreateInstance(document.querySelector(`[data-bs-target="#${pane.id}"]`)).show();
             }
+            document.querySelectorAll('[data-open-tab]').forEach((a) => a.addEventListener('click', (e) => {
+                e.preventDefault();
+                bootstrap.Tab.getOrCreateInstance(document.querySelector(`[data-bs-target="${a.dataset.openTab}"]`)).show();
+            }));
             document.querySelectorAll('[data-bs-toggle="tab"]').forEach((el) => el.addEventListener('shown.bs.tab', (e) => {
                 const id = e.target.dataset.bsTarget;
                 history.replaceState(null, '', id);

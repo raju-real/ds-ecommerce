@@ -3,11 +3,7 @@
 @section('title', 'Order confirmed')
 @section('robots', 'noindex, nofollow')
 
-@if(setting('facebook_pixel_id'))
-    @push('scripts')
-        <script>if (window.fbq) fbq('track', 'Purchase', { value: {{ $order->total }}, currency: 'BDT' });</script>
-    @endpush
-@endif
+{{-- Purchase is tracked once, when the OTP is verified (CheckoutController::verify), and shown here by the layout's pixel. --}}
 
 @section('content')
     <div class="container py-5">

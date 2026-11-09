@@ -8,6 +8,7 @@ use App\Repositories\LocationRepository;
 use App\Repositories\OrderRepository;
 use App\Services\CartService;
 use App\Services\CouponService;
+use App\Services\FacebookPixel;
 use App\Services\OrderService;
 use App\Services\SmsService;
 use Illuminate\Http\Request;
@@ -48,10 +49,15 @@ class CheckoutController extends Controller
         ], $check['ok'] ? 200 : 422);
     }
 
-    public function index()
+    public function index(FacebookPixel $pixel)
     {
+        $items = $this->cart->items();
+        if ($items->isNotEmpty()) {
+            $pixel->track('InitiateCheckout', $pixel->cartData($items));
+        }
+
         return view('frontend.checkout.index', [
-            'items' => $this->cart->items(),
+            'items' => $items,
             'districts' => $this->locations->districts(),
         ]);
     }
@@ -104,12 +110,21 @@ class CheckoutController extends Controller
         return view('frontend.checkout.verify', compact('order'));
     }
 
-    public function verify(Request $request, string $number)
+    public function verify(Request $request, string $number, FacebookPixel $pixel)
     {
         $request->validate(['otp' => 'required|digits:'.config('shop.otp.length')]);
         $this->ownedOrder($number);
 
-        $this->orders->verifyOtp(Order::where('order_number', $number)->firstOrFail(), $request->input('otp'));
+        $order = Order::where('order_number', $number)->firstOrFail();
+        $wasVerified = (bool) $order->otp_verified;
+        $this->orders->verifyOtp($order, $request->input('otp'));
+
+        // The order is real now: Purchase, once per order (same event ID in browser and server, so never doubled).
+        // The browser part fires on the success page; reloading that page does not send it again.
+        if (! $wasVerified && $order->otp_verified) {
+            $order->load('items', 'district');
+            $pixel->track('Purchase', $pixel->orderData($order), $pixel->orderCustomer($order), nextPage: true, eventId: 'purchase.'.$order->order_number);
+        }
 
         return redirect()->route('checkout.success', $number);
     }

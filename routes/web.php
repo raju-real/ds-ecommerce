@@ -120,6 +120,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('reports', [Admin\ReportController::class, 'index'])->name('reports');
         Route::get('settings', [Admin\SettingController::class, 'edit'])->name('settings');
         Route::post('settings', [Admin\SettingController::class, 'update'])->name('settings.update');
+        Route::post('settings/facebook-test', [Admin\SettingController::class, 'facebookTest'])->middleware('throttle:10,1')->name('settings.facebook-test');
         Route::get('profile', [Admin\ProfileController::class, 'edit'])->name('profile');
         Route::post('profile', [Admin\ProfileController::class, 'update'])->name('profile.update');
         Route::post('cache/clear', [Admin\DashboardController::class, 'clearCache'])->name('cache.clear');
