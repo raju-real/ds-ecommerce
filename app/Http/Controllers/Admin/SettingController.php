@@ -83,6 +83,7 @@ class SettingController extends Controller
             'google_analytics_id.regex' => 'Analytics ID looks like G-XXXXXXXXXX.',
             'facebook_capi_token.min' => 'This does not look like a Conversions API access token.',
             'facebook_test_event_code.alpha_num' => 'Test event code is letters and digits only (e.g. TEST12345).',
+            'favicon.dimensions' => 'The favicon must be at least 48 × 48 pixels — a square image of 512 × 512 is best.',
             'sms_otp_template.regex' => 'The SMS text must contain {otp} (where the code goes).',
             'sms_api_url.required_if' => 'Enter the API URL for the custom provider.',
             'google_site_verification.regex' => 'Paste the code from Search Console (or the whole <meta name="google-site-verification" …> tag).',

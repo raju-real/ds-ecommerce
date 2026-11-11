@@ -48,6 +48,7 @@ Route::get('/track-order', [Frontend\TrackOrderController::class, 'index'])->mid
 Route::get('/locations/{districtId}/thanas', [Frontend\LocationController::class, 'thanas'])->name('locations.thanas');
 Route::get('/sitemap.xml', [Frontend\SeoController::class, 'sitemap'])->name('sitemap');
 Route::get('/robots.txt', [Frontend\SeoController::class, 'robots']);
+Route::get('/favicon.ico', [Frontend\SeoController::class, 'favicon'])->name('favicon');
 
 /*
 |--------------------------------------------------------------------------

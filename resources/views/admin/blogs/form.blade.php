@@ -60,7 +60,9 @@
                     </div>
                 </div>
 
-                @include('admin.partials.seo-fields', ['model' => $blog, 'titleHint' => 'Defaults to the post title', 'descHint' => 'Defaults to the first lines of the post (~155 characters)', 'imageHint' => 'Leave empty to use the cover image.'])
+                @include('admin.partials.seo-fields', ['model' => $blog,
+                    'preview' => ['type' => 'blog', 'path' => url('/blog').'/', 'name' => '#title', 'desc' => ['[name="description"]'], 'image' => '#coverPreview'],
+                    'titleHint' => 'Defaults to the post title', 'descHint' => 'Defaults to the first lines of the post (~155 characters)', 'imageHint' => 'Leave empty to use the cover image.'])
             </div>
 
             <div class="col-xl-4">

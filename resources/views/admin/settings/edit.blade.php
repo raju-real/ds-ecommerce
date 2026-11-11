@@ -7,9 +7,15 @@
     $images = [
         'logo' => ['Logo (dark, for header)', 'logo', 'Used in the store header on a white background.'],
         'logo_light' => ['Logo (light, for footer & admin)', 'logo', 'White version on a transparent background.'],
-        'favicon' => ['Favicon', 'favicon', 'Browser tab icon, saved as PNG.'],
+        'favicon' => ['Favicon', 'favicon', 'Browser tab and Google search icon. Upload a square image (512 × 512 is best); it is saved as a 192 × 192 PNG.'],
         'og_image' => ['Social share image', 'og_image', 'Shown when links are shared on Facebook, WhatsApp, etc.'],
     ];
+    // Google only shows favicons whose size is a multiple of 48 px; older uploads were saved at 64 × 64.
+    $favFile = setting('favicon') ? rtrim((string) config('filesystems.disks.uploads.root', public_path('uploads')), '/\\').'/'.ltrim(setting('favicon'), '/') : null;
+    $favSize = $favFile && is_file($favFile) ? @getimagesize($favFile) : null;
+    if ($favSize && ($favSize[0] % 48 !== 0 || $favSize[0] !== $favSize[1])) {
+        $images['favicon'][2] .= ' ⚠ The current one is '.$favSize[0].' × '.$favSize[1].' px, which Google does not show — upload it again.';
+    }
     $phonePattern = '\+?[0-9 \-]{6,20}';
 @endphp
 

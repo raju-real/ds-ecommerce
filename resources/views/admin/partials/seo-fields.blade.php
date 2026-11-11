@@ -1,5 +1,6 @@
 {{-- Meta title, description, keywords (tags with suggestions) and share image. All optional.
-     Expects $model; optional $titleHint, $descHint, $imageHint (what is used when a field is left empty). --}}
+     Expects $model; optional $titleHint, $descHint, $imageHint (what is used when a field is left empty),
+     $preview (live Google / share preview, see admin/partials/seo-preview). --}}
 @php
     $keywords = \App\Support\Seo::list(old('meta_keywords_present') ? old('meta_keywords', []) : $model->meta_keywords);
 @endphp
@@ -52,5 +53,8 @@
                 </div>
             </div>
         </div>
+        @isset($preview)
+            @include('admin.partials.seo-preview')
+        @endisset
     </div>
 </div>

@@ -25,7 +25,8 @@
     <title>{{ $metaTitle }}</title>
     <meta name="description" content="{{ \Illuminate\Support\Str::limit(strip_tags($metaDescription), 160) }}">
     @if($metaKeywords)<meta name="keywords" content="{{ $metaKeywords }}">@endif
-    <meta name="robots" content="@yield('robots', 'index, follow')">
+    {{-- max-image-preview:large lets Google show big product images in results; max-snippet:-1 = full description. --}}
+    <meta name="robots" content="@yield('robots', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1')">
     <link rel="canonical" href="{{ $canonical }}">
     <meta name="theme-color" content="#4f46e5">
     @if(request()->routeIs('home'))
@@ -48,10 +49,12 @@
     <meta name="twitter:description" content="{{ \Illuminate\Support\Str::limit(strip_tags($metaDescription), 200) }}">
     @if($ogImage)<meta name="twitter:image" content="{{ $ogImage }}">@endif
 
+    {{-- Favicon (Settings → Branding), saved as a 192×192 PNG: Google shows it next to results only when its size is a
+         multiple of 48 px. /favicon.ico serves the same image (SeoController@favicon). --}}
     @if(setting('favicon'))
-        <link rel="icon" type="image/png" href="{{ img_url(setting('favicon')) }}">
-    @else
-        <link rel="icon" href="{{ asset('favicon.ico') }}">
+        <link rel="icon" type="image/png" sizes="192x192" href="{{ img_url(setting('favicon')) }}">
+        <link rel="apple-touch-icon" href="{{ img_url(setting('favicon')) }}">
+        <link rel="shortcut icon" href="{{ url('/favicon.ico') }}">
     @endif
 
     <link rel="preconnect" href="https://fonts.googleapis.com">

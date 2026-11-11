@@ -43,7 +43,7 @@ return [
         'category' => [300, 300],
         'slider' => [1600, 600],
         'logo' => [400, 120],
-        'favicon' => [64, 64],
+        'favicon' => [192, 192],    // Google shows favicons whose size is a multiple of 48 px (48, 96, 192 …)
         'blog' => ['large' => [1200, 630], 'thumb' => [600, 315]], // cover cropped to the social-share ratio
         'editor' => [1200, 1600],
         'share' => [1200, 630],                                    // meta (share) image of products, categories, brands, blogs                                   // images inside blog/product text, scaled down only
@@ -74,6 +74,7 @@ return [
             'blog' => [800, 420],
             'slider' => [1200, 400],
             'meta_image' => [600, 315],
+            'favicon' => [48, 48],
         ],
 
         // Shown as the upload hint: ideal width x height and aspect ratio.
@@ -84,7 +85,7 @@ return [
             'brand' => [300, 300, 'square or wide logo'],
             'slider' => [1600, 600, '8:3 wide banner'],
             'logo' => [400, 120, 'wide, transparent PNG'],
-            'favicon' => [64, 64, '1:1 square'],
+            'favicon' => [512, 512, '1:1 square — Google search icon'],
             'og_image' => [1200, 630, '1.91:1'],
             'meta_image' => [1200, 630, '1.91:1 — shown when the link is shared on Facebook/WhatsApp'],
             'blog' => [1200, 630, '1.91:1 — also the Facebook/WhatsApp share image'],

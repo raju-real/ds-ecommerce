@@ -386,6 +386,84 @@
         if (e.key === 'Enter') { e.preventDefault(); generateSlug($(this).closest('[data-slug-gen]')); } // never submits the form
     });
 
+    /* Live Google / share preview in the SEO card (partial: admin/partials/seo-preview). Same rules as the shop pages:
+       title = meta title or name + " | site", description = meta description or the page text (160 chars),
+       image = share image or main image. Google cuts titles at ~600 px and descriptions at ~160 characters. */
+    (function () {
+        const box = document.querySelector('[data-seo-preview]');
+        if (!box) return;
+        const cfg = JSON.parse(box.dataset.seoPreview);
+        const q = (s) => (s ? document.querySelector(s) : null);
+        const plain = (html) => { const d = document.createElement('div'); d.innerHTML = html || ''; return (d.textContent || '').replace(/\s+/g, ' ').trim(); };
+        const ctx = document.createElement('canvas').getContext('2d');
+        const TITLE_FONT = '20px Arial';
+        const width = (s) => { ctx.font = TITLE_FONT; return ctx.measureText(s).width; };
+        const cutWidth = (s, max) => {
+            if (width(s) <= max) return s;
+            let lo = 0, hi = s.length;
+            while (lo < hi) { const m = (lo + hi + 1) >> 1; if (width(s.slice(0, m) + ' …') <= max) lo = m; else hi = m - 1; }
+            return s.slice(0, lo).replace(/[\s,.;:|–-]+$/, '') + ' …';
+        };
+        const cutChars = (s, n) => (s.length <= n ? s : s.slice(0, n).replace(/\s+\S*$/, '') + ' …');
+        const shownSrc = (sel) => { const img = q(sel); return img && !img.classList.contains('d-none') && img.getAttribute('src') ? img.src : ''; };
+        const fieldText = (el) => plain(window.jQuery && $(el).data('summernote') ? $(el).summernote('code') : el.value);
+        const meter = (key, cls, html) => { const m = box.querySelector(`[data-pv-meter="${key}"]`); m.className = 'seo-meter ' + cls; m.innerHTML = html; };
+        const setImg = (wrap, src) => { const img = wrap.querySelector('img'); wrap.classList.toggle('has-img', !!src); if (src) img.src = src; else img.removeAttribute('src'); };
+
+        function render() {
+            const name = (q(cfg.name)?.value || '').trim();
+            const page = (q('#meta_title')?.value || '').trim() || name;
+            const title = (page || (cfg.type === 'blog' ? 'Post title' : 'Product name')) + ' | ' + cfg.siteName;
+
+            let desc = (q('#meta_description')?.value || '').trim();
+            let descFrom = 'meta description';
+            if (!desc) {
+                for (const s of cfg.desc) { const el = q(s); const v = el ? fieldText(el) : ''; if (v) { desc = v; descFrom = el.name === 'short_description' ? 'short description' : (cfg.type === 'blog' ? 'post text' : 'description'); break; } }
+            }
+            desc = cutChars(desc, 160);
+
+            const slugEl = q('#slug');
+            const slug = (slugEl && slugEl.value.trim()) || slugify(name) || (cfg.type === 'blog' ? 'post-url' : 'product-url');
+            box.querySelector('[data-pv-url]').textContent = 'https://' + cfg.host + ' › ' + cfg.type + ' › ' + slug;
+
+            box.querySelector('[data-pv-title]').textContent = cutWidth(title, 600);
+            box.querySelector('[data-pv-desc]').textContent = desc || 'No description yet — Google will pick text from the page.';
+            box.querySelector('[data-pv-desc]').classList.toggle('text-muted', !desc);
+            box.querySelector('[data-pv-share-title]').textContent = title;
+            box.querySelector('[data-pv-share-desc]').textContent = desc;
+
+            const removeMeta = q('#remove_meta_image')?.checked;
+            const metaSrc = removeMeta ? '' : shownSrc('#metaImagePreview');
+            const mainSrc = shownSrc(cfg.image);
+            const img = metaSrc || mainSrc;
+            setImg(box.querySelector('[data-pv-thumb]'), mainSrc || metaSrc);   // Google shows the page's main picture
+            setImg(box.querySelector('[data-pv-share-img]'), img);               // Facebook / WhatsApp use the share image first
+
+            const w = Math.round(width(title));
+            meter('title', w <= 580 ? 'ok' : w <= 600 ? 'warn' : 'bad',
+                `<i class="bi bi-type"></i> Title ${title.length} chars · ${w}px ${w <= 580 ? '— fits' : w <= 600 ? '— almost full' : '— Google cuts it (keep under ~580px)'}`);
+            meter('desc', !desc ? 'bad' : desc.length < 70 ? 'warn' : 'ok',
+                `<i class="bi bi-text-paragraph"></i> Description ${desc.length} chars${desc ? ' (from ' + descFrom + ')' : ''}${desc && desc.length < 70 ? ' — a bit short' : ''}`);
+            meter('image', metaSrc ? 'ok' : mainSrc ? 'ok' : 'bad',
+                `<i class="bi bi-image"></i> ${metaSrc ? 'Share image set' : mainSrc ? 'Using the main image for sharing' : 'No image yet'}`);
+        }
+
+        let frame = null;
+        const schedule = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(render); };
+        const watched = [cfg.name, '#meta_title', '#meta_description', '#slug', '#remove_meta_image', ...cfg.desc].filter(Boolean).join(',');
+        $(document).on('input change', watched, schedule);
+        $(document).on('summernote.change summernote.keyup', '.editor', schedule);
+        // Image pickers update their <img> preview on change; read it right after.
+        $(document).on('change', 'input[type=file]', () => setTimeout(schedule, 60));
+        $(box).on('click', '[data-seo-tab]', function () {
+            $(box).find('[data-seo-tab]').removeClass('active');
+            $(this).addClass('active');
+            $(box).find('[data-seo-pane]').addClass('d-none').filter(`[data-seo-pane="${this.dataset.seoTab}"]`).removeClass('d-none');
+        });
+        render();
+        setTimeout(render, 400); // after the text editor has loaded
+    })();
+
     /* Flash */
     $(function () {
         const f = window.ADMIN_FLASH || {};

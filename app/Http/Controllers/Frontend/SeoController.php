@@ -15,6 +15,19 @@ class SeoController extends Controller
             ->header('X-Robots-Tag', 'noindex'); // the file itself is not a search result
     }
 
+    /**
+     * /favicon.ico — browsers and Google ask for this address too. Serves the favicon uploaded in Settings
+     * (a 192×192 PNG; every browser and Google accept a PNG here). 404 when no favicon is set.
+     */
+    public function favicon()
+    {
+        $path = setting('favicon');
+        $file = $path ? rtrim((string) config('filesystems.disks.uploads.root', public_path('uploads')), '/\\').'/'.ltrim($path, '/') : null;
+        abort_unless($file && is_file($file), 404);
+
+        return response()->file($file, ['Content-Type' => 'image/png', 'Cache-Control' => 'public, max-age=86400']);
+    }
+
     public function robots()
     {
         $lines = [
