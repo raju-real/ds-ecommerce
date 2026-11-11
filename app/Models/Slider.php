@@ -16,7 +16,8 @@ class Slider extends Model
     protected static array $cacheGroups = [ModelCache::SLIDERS];
 
     protected $fillable = ['title', 'subtitle', 'button_text', 'link', 'image', 'sort_order', 'is_active',
-        'title_color', 'subtitle_color', 'button_color', 'button_text_color', 'text_shade', 'show_text', 'button_position'];
+        'title_color', 'subtitle_color', 'button_color', 'button_text_color', 'text_shade', 'show_text', 'button_position',
+        'show_title', 'show_subtitle', 'show_button'];
 
     public const BUTTON_POSITIONS = [
         'below_text' => 'Right below the text',
@@ -31,10 +32,40 @@ class Slider extends Model
         return array_key_exists((string) $this->button_position, self::BUTTON_POSITIONS) ? $this->button_position : 'bottom_left';
     }
 
-    /** Show title / subtitle / button on the banner? (true until the show_text migration has run) */
+    /**
+     * Is this part switched on for the banner? $part: title | subtitle | button.
+     * Falls back to the older single "show text" switch, then to on, until the migrations have run.
+     */
+    public function shows(string $part): bool
+    {
+        $value = $this->getAttribute("show_$part");
+        if ($value === null) {
+            return $this->show_text === null || (bool) $this->show_text;
+        }
+
+        return (bool) $value;
+    }
+
+    /** What the banner really shows: switched on AND filled in (the button also needs a link). */
+    public function visibleParts(): array
+    {
+        return [
+            'title' => $this->shows('title') && filled($this->title),
+            'subtitle' => $this->shows('subtitle') && filled($this->subtitle),
+            'button' => $this->shows('button') && filled($this->button_text) && filled($this->link),
+        ];
+    }
+
+    /** Any text (title, subtitle or button) on the banner? */
     public function showsText(): bool
     {
-        return $this->show_text === null || (bool) $this->show_text;
+        return in_array(true, $this->visibleParts(), true);
+    }
+
+    /** Parts switched off, for the admin list ("Hidden: title, button"). */
+    public function hiddenParts(): array
+    {
+        return array_values(array_filter(['title', 'subtitle', 'button'], fn ($p) => ! $this->shows($p)));
     }
 
     public const SHADES = ['none' => 'None', 'dark' => 'Dark shade (light text)', 'light' => 'Light shade (dark text)'];

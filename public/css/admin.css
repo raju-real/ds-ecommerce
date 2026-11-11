@@ -509,3 +509,4 @@ body:has(.note-editor.fullscreen) { overflow: hidden; }
 .slide-preview .hero-btn, .slide-preview .carousel-caption .btn, .slide-preview .hero-btn-float .btn { font-size: max(6.5px, 1.45cqw); padding: .55cqw 1.35cqw; border-radius: max(4px, .9cqw); line-height: 1.5; pointer-events: none; }
 .slide-preview .hero-text .hero-btn { margin-top: 1.1cqw; }
 .slide-preview .carousel-caption > .hero-btn { margin-top: 1cqw; }
+.slide-preview .hero-btn-spacer { visibility: hidden; }

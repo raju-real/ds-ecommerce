@@ -21,7 +21,7 @@ class SliderController extends Controller
 
     public function create()
     {
-        return view('admin.sliders.form', ['slider' => new Slider(['is_active' => true, 'show_text' => true, 'sort_order' => Slider::nextSortOrder()])]);
+        return view('admin.sliders.form', ['slider' => new Slider(['is_active' => true, 'show_text' => true, 'show_title' => true, 'show_subtitle' => true, 'show_button' => true, 'sort_order' => Slider::nextSortOrder()])]);
     }
 
     public function store(Request $request)
@@ -114,8 +114,16 @@ class SliderController extends Controller
         }
         $data['sort_order'] ??= ($uid = $request->route('slider')) ? Slider::where('unique_id', $uid)->value('sort_order') : Slider::nextSortOrder();
         $data['is_active'] = $request->boolean('is_active');
+        // Each part of the banner text is shown or hidden on its own.
+        $parts = ['title', 'subtitle', 'button'];
+        if (\Illuminate\Support\Facades\Schema::hasColumn('sliders', 'show_title')) {
+            foreach ($parts as $part) {
+                $data["show_$part"] = $request->boolean("show_$part");
+            }
+        }
         if (\Illuminate\Support\Facades\Schema::hasColumn('sliders', 'show_text')) {
-            $data['show_text'] = $request->boolean('show_text');
+            // Older single switch: on while any part is on (only used before the newer migration).
+            $data['show_text'] = collect($parts)->contains(fn ($p) => $request->boolean("show_$p"));
         }
         $data['button_position'] = $data['button_position'] ?? 'bottom_left';
         if (! \Illuminate\Support\Facades\Schema::hasColumn('sliders', 'button_position')) {

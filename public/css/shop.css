@@ -100,7 +100,8 @@ img { max-width: 100%; }
 .hero .carousel-caption .hero-btn { flex: 0 0 auto; align-self: flex-start; margin-top: .75rem; }
 /* Button position (per slide, Admin → Sliders) */
 .hero .carousel-caption .hero-text .hero-btn { margin-top: .9rem; }                      /* below_text: right under the subtitle */
-.hero .carousel-caption .hero-btn-spacer { visibility: hidden; pointer-events: none; }        /* keeps the text above a center/right button */
+.hero .carousel-caption .hero-btn-spacer { visibility: hidden; pointer-events: none; }
+.hero .carousel-caption.no-btn { pointer-events: none; }   /* no button: clicks on the text reach the banner link */        /* keeps the text above a center/right button */
 .hero-btn-float { position: absolute; bottom: 12%; z-index: 2; }  /* same line as bottom_left, above the dots */
 .hero-btn-float.hero-btn-bottom_center { left: 50%; transform: translateX(-50%); }
 .hero-btn-float.hero-btn-bottom_right { right: 7%; }

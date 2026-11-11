@@ -25,41 +25,48 @@
                                 <div class="col-12"><div class="p-2 px-3 rounded-3 small bg-soft-danger"><i class="bi bi-exclamation-triangle me-1"></i>Colours are not saved yet: run <code>php artisan migrate</code> on this server once.</div></div>
                             @endunless
 
-                            {{-- Text --}}
-                            <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            {{-- Text: title and subtitle are always required (also the image description for Google);
+                                 each one is shown on the banner or hidden with its own switch. --}}
+                            <div class="col-12">
                                 <h6 class="fw-semibold mb-0"><i class="bi bi-type me-1"></i> Text</h6>
-                                <div class="form-check form-switch mb-0">
-                                    <input type="hidden" name="show_text" value="0">
-                                    <input class="form-check-input" type="checkbox" role="switch" name="show_text" value="1" id="show_text" @checked(old('show_text', $slider->showsText()))>
-                                    <label class="form-check-label fw-semibold" for="show_text">Show text on website</label>
-                                </div>
+                                <div class="form-text mt-0">Use the <strong>Show</strong> switches to hide a part on the website, e.g. when the text is already in the image. Hidden text is still used as the image description for Google.</div>
                             </div>
-                            <div class="col-12 mt-1"><div class="form-text mt-0" id="showTextHint">Off: only the image is shown (the whole banner opens the link). The title is still used as the image description for Google.</div></div>
                             <div class="col-md-8">
-                                <label class="form-label" for="title">Title <span class="text-danger">*</span></label>
+                                <div class="d-flex justify-content-between align-items-center gap-2">
+                                    <label class="form-label" for="title">Title <span class="text-danger">*</span></label>
+                                    @include('admin.sliders.partials.show-switch', ['part' => 'title'])
+                                </div>
                                 <input type="text" name="title" id="title" class="form-control @error('title') is-invalid @enderror" value="{{ old('title', $slider->title) }}" placeholder="Big headline, e.g. Mega Gadget Sale" maxlength="80" data-counter required data-msg-required="Please enter a title.">
                                 @error('title')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
-                            <div class="col-md-4" data-text-only>@include('admin.sliders.partials.color', ['key' => 'title_color', 'label' => 'Title colour', 'default' => '#ffffff'])</div>
+                            <div class="col-md-4" data-part="title">@include('admin.sliders.partials.color', ['key' => 'title_color', 'label' => 'Title colour', 'default' => '#ffffff'])</div>
                             <div class="col-md-8">
-                                <label class="form-label" for="subtitle">Subtitle <span class="text-danger">*</span></label>
+                                <div class="d-flex justify-content-between align-items-center gap-2">
+                                    <label class="form-label" for="subtitle">Subtitle <span class="text-danger">*</span></label>
+                                    @include('admin.sliders.partials.show-switch', ['part' => 'subtitle'])
+                                </div>
                                 <input type="text" name="subtitle" id="subtitle" class="form-control @error('subtitle') is-invalid @enderror" value="{{ old('subtitle', $slider->subtitle) }}" placeholder="Supporting line, e.g. Up to 30% off this week" maxlength="150" data-counter required data-msg-required="Please enter a subtitle.">
                                 @error('subtitle')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
-                            <div class="col-md-4" data-text-only>@include('admin.sliders.partials.color', ['key' => 'subtitle_color', 'label' => 'Subtitle colour', 'default' => '#ffffff'])</div>
+                            <div class="col-md-4" data-part="subtitle">@include('admin.sliders.partials.color', ['key' => 'subtitle_color', 'label' => 'Subtitle colour', 'default' => '#ffffff'])</div>
 
                             {{-- Button --}}
-                            <div class="col-12"><hr class="my-1"><h6 class="fw-semibold mb-0"><i class="bi bi-hand-index me-1"></i> Button</h6></div>
+                            <div class="col-12"><hr class="my-1">
+                                <div class="d-flex justify-content-between align-items-center gap-2">
+                                    <h6 class="fw-semibold mb-0"><i class="bi bi-hand-index me-1"></i> Button</h6>
+                                    @include('admin.sliders.partials.show-switch', ['part' => 'button'])
+                                </div>
+                            </div>
                             <div class="col-md-5">
                                 <label class="form-label" for="button_text">Button text</label>
                                 <input type="text" name="button_text" id="button_text" class="form-control" value="{{ old('button_text', $slider->button_text) }}" placeholder="Shop now" maxlength="30">
                             </div>
                             <div class="col-md-7">
-                                <label class="form-label" for="link">Button link</label>
+                                <label class="form-label" for="link">Link</label>
                                 <input type="text" name="link" id="link" class="form-control" value="{{ old('link', $slider->link) }}" placeholder="category/electronics or https://…" maxlength="255">
                             </div>
-                            <div class="col-12 mt-1"><div class="form-text mt-0">Link: a path inside the store or a full URL. The button shows when both text and link are set.</div></div>
-                            <div class="col-md-5" data-text-only>
+                            <div class="col-12 mt-1"><div class="form-text mt-0">Link: a path inside the store or a full URL. The button shows when it is switched on and has text and a link. With the button hidden, the whole banner opens the link.</div></div>
+                            <div class="col-md-5" data-part="button">
                                 <label class="form-label" for="button_position">Button position</label>
                                 <select name="button_position" id="button_position" class="form-select">
                                     @foreach(\App\Models\Slider::BUTTON_POSITIONS as $key => $label)
@@ -67,21 +74,21 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-md-7 d-flex align-items-end" data-text-only>
+                            <div class="col-md-7 d-flex align-items-end" data-part="button">
                                 <div class="btn-group w-100" role="group" aria-label="Button position quick pick">
                                     @foreach(['below_text' => 'bi-text-left', 'bottom_left' => 'bi-align-start', 'bottom_center' => 'bi-align-center', 'bottom_right' => 'bi-align-end'] as $key => $icon)
                                         <button type="button" class="btn btn-outline-secondary" data-btn-pos="{{ $key }}" title="{{ \App\Models\Slider::BUTTON_POSITIONS[$key] }}"><i class="bi {{ $icon }}"></i></button>
                                     @endforeach
                                 </div>
                             </div>
-                            <div class="col-md-5" data-text-only>@include('admin.sliders.partials.color', ['key' => 'button_color', 'label' => 'Button background', 'default' => '#f8f9fa'])</div>
-                            <div class="col-md-5" data-text-only>@include('admin.sliders.partials.color', ['key' => 'button_text_color', 'label' => 'Button text colour', 'default' => '#212529'])</div>
-                            <div class="col-md-2 d-flex align-items-end" data-text-only>
+                            <div class="col-md-5" data-part="button">@include('admin.sliders.partials.color', ['key' => 'button_color', 'label' => 'Button background', 'default' => '#f8f9fa'])</div>
+                            <div class="col-md-5" data-part="button">@include('admin.sliders.partials.color', ['key' => 'button_text_color', 'label' => 'Button text colour', 'default' => '#212529'])</div>
+                            <div class="col-md-2 d-flex align-items-end" data-part="button">
                                 <span class="btn btn-light fw-bold w-100 text-truncate border" id="buttonSwatch" title="Button preview" style="pointer-events:none">Shop now</span>
                             </div>
 
                             {{-- Look --}}
-                            <div class="col-12" data-text-only><hr class="my-1"><h6 class="fw-semibold mb-0"><i class="bi bi-palette me-1"></i> Look</h6><div class="form-text mt-0">Pick what reads well on this image — the preview on the right updates as you change it. Empty colour = default.</div></div>
+                            <div class="col-12" data-part="text"><hr class="my-1"><h6 class="fw-semibold mb-0"><i class="bi bi-palette me-1"></i> Look</h6><div class="form-text mt-0">Pick what reads well on this image — the preview on the right updates as you change it. Empty colour = default.</div></div>
                             <div class="col-sm-6">
                                 <label class="form-label" for="text_shade">Shade behind text</label>
                                 <select name="text_shade" id="text_shade" class="form-select">
@@ -156,11 +163,13 @@
             const code = (k) => { const v = $f('#' + k).value.trim(); return /^#[0-9a-fA-F]{6}$/.test(v) ? v : ''; };
             const paintButton = (el) => { el.style.backgroundColor = code('button_color'); el.style.borderColor = code('button_color'); el.style.color = code('button_text_color'); };
             const render = () => {
-                const title = $f('#title').value.trim(), sub = $f('#subtitle').value.trim(), btn = $f('#button_text').value.trim();
+                const title = $f('#title').value.trim(), sub = $f('#subtitle').value.trim(), btn = $f('#button_text').value.trim(), link = $f('#link').value.trim();
+                // Each part on its own: switched on AND filled in (the button also needs a link) — same rule as the website.
+                const show = { title: $f('#show_title').checked && !!title, subtitle: $f('#show_subtitle').checked && !!sub, button: $f('#show_button').checked && !!btn && !!link };
                 const t = $f('[data-pv="title"]'), s = $f('[data-pv="subtitle"]'), b = $f('[data-pv="button"]');
-                t.textContent = title; t.style.display = title ? '' : 'none'; t.style.color = code('title_color');
-                s.textContent = sub; s.style.display = sub ? '' : 'none'; s.style.color = code('subtitle_color');
-                b.textContent = btn; b.style.display = btn && $f('#link').value.trim() ? '' : 'none';
+                t.textContent = title; t.style.display = show.title ? '' : 'none'; t.style.color = code('title_color');
+                s.textContent = sub; s.style.display = show.subtitle ? '' : 'none'; s.style.color = code('subtitle_color');
+                b.textContent = btn; b.style.display = show.button ? '' : 'none';
                 // Put the preview button where the website will show it.
                 const pos = $f('#button_position').value, float = $f('[data-pv-float]');
                 float.className = 'hero-btn-float hero-btn-' + pos;
@@ -169,21 +178,22 @@
                 else float.appendChild(b);
                 const spacer = $f('[data-pv-spacer]');
                 spacer.textContent = btn;
-                spacer.style.display = b.style.display !== 'none' && (pos === 'bottom_center' || pos === 'bottom_right') ? '' : 'none';
-                float.style.display = $f('#show_text').checked ? '' : 'none';
+                spacer.style.display = show.button && (pos === 'bottom_center' || pos === 'bottom_right') ? '' : 'none';
                 document.querySelectorAll('[data-btn-pos]').forEach((x) => x.classList.toggle('active', x.dataset.btnPos === pos));
                 paintButton(b);
                 const sw = $f('#buttonSwatch');
                 sw.textContent = btn || 'Shop now';
                 paintButton(sw);
-                const on = $f('#show_text').checked;
+                const anyText = show.title || show.subtitle;
                 const sh = $f('#text_shade').value;
-                shade.className = 'hero-shade' + (on && (sh === 'dark' || sh === 'light') ? ' hero-shade-' + sh : '');
-                $f('.slide-preview .carousel-caption').style.display = on ? '' : 'none';
-                // Text off: the colour/button options do nothing on the website, so dim them.
-                document.querySelectorAll('[data-text-only]').forEach((el) => el.classList.toggle('opacity-50', !on));
+                shade.className = 'hero-shade' + (anyText && (sh === 'dark' || sh === 'light') ? ' hero-shade-' + sh : '');
+                $f('.slide-preview .carousel-caption').style.display = anyText || show.button ? '' : 'none';
+                // Options for a hidden part do nothing on the website, so dim them.
+                const switched = { title: $f('#show_title').checked, subtitle: $f('#show_subtitle').checked, button: $f('#show_button').checked };
+                switched.text = switched.title || switched.subtitle;
+                document.querySelectorAll('[data-part]').forEach((el) => el.classList.toggle('opacity-50', !switched[el.dataset.part]));
             };
-            $f('#show_text').addEventListener('change', render);
+            document.querySelectorAll('[data-show-part]').forEach((x) => x.addEventListener('change', render));
             $f('#button_position').addEventListener('change', render);
             document.querySelectorAll('[data-btn-pos]').forEach((x) => x.addEventListener('click', () => { $f('#button_position').value = x.dataset.btnPos; render(); }));
             document.querySelectorAll('[data-color-field]').forEach((g) => {
