@@ -3,7 +3,7 @@
 @section('title', $product->meta_title ?: $product->name)
 @section('description', $product->meta_description ?: ($product->short_description ?: strip_tags($product->description)))
 @section('og_type', 'product')
-@section('og_image', $product->meta_image ? img_url($product->meta_image) : $product->image_url)
+@section('og_image', $product->share_image_url)
 @if($product->meta_keywords)
     @section('keywords', $product->meta_keywords)
 @endif
@@ -12,15 +12,24 @@
 @push('head')
     <meta property="product:price:amount" content="{{ $product->selling_price }}">
     <meta property="product:price:currency" content="BDT">
+    <meta property="product:availability" content="{{ $product->in_stock ? 'in stock' : 'out of stock' }}">
+    <meta property="product:retailer_item_id" content="{{ \App\Services\FacebookPixel::contentId($product) }}">
+    @php([$shareW, $shareH] = $product->shareImageSize())
+    <meta property="og:image:width" content="{{ $shareW }}">
+    <meta property="og:image:height" content="{{ $shareH }}">
     <script type="application/ld+json">
         {!! json_encode([
             '@context' => 'https://schema.org',
             '@graph' => [
                 [
                     '@type' => 'Product',
+                    'url' => $product->url,
                     'name' => $product->name,
                     'sku' => $product->code,
-                    'image' => $product->gallery()->map(fn ($i) => img_url($i->path))->all(),
+                    // Product photos first (Google uses the first), then the share image when set.
+                    'image' => $product->gallery()->filter(fn ($i) => $i->path)->map(fn ($i) => img_url($i->path))
+                        ->when($product->meta_image, fn ($c) => $c->push(img_url($product->meta_image)))
+                        ->whenEmpty(fn ($c) => $c->push($product->image_url))->values()->all(),
                     'description' => \Illuminate\Support\Str::limit(strip_tags($product->short_description ?: $product->description), 500),
                     'category' => optional($product->category)->name,
                     'brand' => ['@type' => 'Brand', 'name' => optional($product->brand)->name ?? setting('site_name', config('app.name'))],
@@ -29,6 +38,8 @@
                         'url' => $product->url,
                         'priceCurrency' => 'BDT',
                         'price' => $product->selling_price,
+                        'priceValidUntil' => now()->addYear()->endOfYear()->toDateString(),
+                        'seller' => ['@type' => 'Organization', 'name' => setting('site_name', config('app.name'))],
                         'availability' => $product->in_stock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
                         'itemCondition' => 'https://schema.org/NewCondition',
                     ],

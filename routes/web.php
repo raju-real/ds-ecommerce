@@ -97,6 +97,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::delete('{order}', 'destroy')->name('destroy');
         });
 
+        Route::post('sliders/sort', [Admin\SliderController::class, 'saveSort'])->name('sliders.sort');
         Route::resource('sliders', Admin\SliderController::class)->except('show');
         Route::get('blogs/link-search', [Admin\BlogController::class, 'linkSearch'])->name('blogs.link-search');
         Route::resource('blogs', Admin\BlogController::class)->except('show');
@@ -121,6 +122,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('settings', [Admin\SettingController::class, 'edit'])->name('settings');
         Route::post('settings', [Admin\SettingController::class, 'update'])->name('settings.update');
         Route::post('settings/facebook-test', [Admin\SettingController::class, 'facebookTest'])->middleware('throttle:10,1')->name('settings.facebook-test');
+        Route::post('settings/sms-balance', [Admin\SettingController::class, 'smsBalance'])->middleware('throttle:20,1')->name('settings.sms-balance');
+        Route::post('settings/sms-test', [Admin\SettingController::class, 'smsTest'])->middleware('throttle:5,1')->name('settings.sms-test');
         Route::get('profile', [Admin\ProfileController::class, 'edit'])->name('profile');
         Route::post('profile', [Admin\ProfileController::class, 'update'])->name('profile.update');
         Route::post('cache/clear', [Admin\DashboardController::class, 'clearCache'])->name('cache.clear');

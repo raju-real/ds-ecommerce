@@ -113,10 +113,14 @@ return [
     ],
 
     'sms' => [
-        'driver' => env('SMS_DRIVER', 'log'), // log | http
+        'driver' => env('SMS_DRIVER', 'log'), // log | bulksmsbd | http
         'url' => env('SMS_API_URL'),
         'api_key' => env('SMS_API_KEY'),
         'sender_id' => env('SMS_SENDER_ID'),
+        'bulksmsbd' => [
+            'send_url' => env('BULKSMSBD_SEND_URL', 'http://bulksmsbd.net/api/smsapi'),
+            'balance_url' => env('BULKSMSBD_BALANCE_URL', 'http://bulksmsbd.net/api/getBalanceApi'),
+        ],
     ],
 
     // Admin-side order workflow. The customer only sees the 3-step public status.

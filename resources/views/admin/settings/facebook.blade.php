@@ -4,6 +4,14 @@
     $hasToken = filled($s['facebook_capi_token'] ?? null);
     $tokenReadable = $hasToken && $fbPixel->token() !== null;
     $fbStatus = $fbPixel->lastStatus();
+    // Why server events are not running (null = running).
+    $serverOff = match (true) {
+        ! $fbPixel->pixelId() => 'add the Pixel ID',
+        ! $hasToken => 'paste an access token',
+        ! $tokenReadable => 'paste the access token again',
+        ($s['facebook_capi_enabled'] ?? null) !== '1' => 'switch on "Send server events"',
+        default => null,
+    };
 @endphp
 <div class="tab-pane fade" id="pixel">
     <input type="hidden" name="facebook_present" value="1">
@@ -15,6 +23,11 @@
                 <input type="text" name="facebook_pixel_id" id="facebook_pixel_id" class="form-control @error('facebook_pixel_id') is-invalid @enderror" value="{{ $v('facebook_pixel_id') }}" placeholder="e.g. 123456789012345" minlength="10" maxlength="20" pattern="[0-9]+" inputmode="numeric" data-digits data-msg-pattern="Pixel ID contains digits only.">
                 @error('facebook_pixel_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 <div class="form-text">Events Manager → Data sources → your Pixel → the number under its name. Empty = Pixel off.</div>
+
+                <label class="form-label mt-3" for="facebook_domain_verification">Domain verification code</label>
+                <input type="text" name="facebook_domain_verification" id="facebook_domain_verification" class="form-control font-monospace @error('facebook_domain_verification') is-invalid @enderror" value="{{ $v('facebook_domain_verification') }}" placeholder='e.g. gkft31iudg72d1q2vy2gcgkbcczr4a' maxlength="200" spellcheck="false" autocomplete="off">
+                @error('facebook_domain_verification')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                <div class="form-text">Business Settings → Brand safety → Domains → <em>Meta-tag verification</em>. Paste the code or the whole <code>&lt;meta name="facebook-domain-verification" …&gt;</code> tag; it is added to the home page.</div>
             </div>
             <div class="col-md-6">
                 <div class="p-3 rounded-3 bg-light small h-100">
@@ -34,10 +47,10 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
             <h5><i class="bi bi-hdd-network me-1"></i> Conversions API (server events)</h5>
-            @if($fbPixel->serverEnabled())
+            @if($serverOff === null)
                 <span class="badge badge-soft-success"><i class="bi bi-check-circle me-1"></i>Active</span>
             @else
-                <span class="badge badge-soft-secondary">Off</span>
+                <span class="badge badge-soft-warning" id="fbServerOff"><i class="bi bi-pause-circle me-1"></i>Off — {{ $serverOff }}, then save</span>
             @endif
         </div>
         <div class="card-body row g-3">

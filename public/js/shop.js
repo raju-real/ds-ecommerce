@@ -33,7 +33,7 @@
         }
         $body.html(data.items.map((i) => `
             <div class="cart-line" data-id="${i.id}">
-                <img src="${esc(i.image)}" alt="" width="64" height="64">
+                <img src="${esc(i.image)}" alt="${esc(i.name)}" width="64" height="64">
                 <div class="flex-grow-1 min-w-0">
                     <a href="${esc(i.url)}" class="name d-block text-truncate">${esc(i.name)}</a>
                     <div class="d-flex align-items-center justify-content-between mt-1">
@@ -344,14 +344,14 @@
                     ? `<button type="button" class="ss-act" data-add-to-cart="${r.id}" title="Add to cart" aria-label="Add ${esc(r.name)} to cart"><i class="bi bi-bag-plus"></i></button>`
                     : '<span class="badge text-bg-light">Out of stock</span>';
                 return `<div class="ss-item" role="option">
-                    <img src="${esc(r.image)}" alt="" width="52" height="52" loading="lazy">
+                    <img src="${esc(r.image)}" alt="${esc(r.name)}" width="52" height="52" loading="lazy">
                     <div class="ss-body"><a class="ss-title" href="${esc(r.url)}">${highlight(r.name, q)}</a>
-                        <div class="ss-meta">${price}<span>· ${esc(r.code)}</span></div></div>
+                        <div class="ss-meta">${price}</div></div>
                     <div class="ss-actions">${cart}<a class="ss-act ghost" href="${esc(r.url)}" title="View details" aria-label="View details"><i class="bi bi-chevron-right"></i></a></div>
                 </div>`;
             }
             return `<div class="ss-item ${type === 'categories' ? 'round' : ''}" role="option">
-                <img src="${esc(r.image)}" alt="" width="52" height="52" loading="lazy">
+                <img src="${esc(r.image)}" alt="${esc(r.name)}" width="52" height="52" loading="lazy">
                 <div class="ss-body"><a class="ss-title" href="${esc(r.url)}">${highlight(r.name, q)}</a><div class="ss-meta">${esc(r.meta)}</div></div>
                 <div class="ss-actions"><a class="ss-act ghost" href="${esc(r.url)}" title="Open" aria-label="Open ${esc(r.name)}"><i class="bi bi-chevron-right"></i></a></div>
             </div>`;

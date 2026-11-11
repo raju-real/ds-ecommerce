@@ -140,8 +140,8 @@ class OrderService
             'otp_resends' => $order->otp_resends + ($isResend ? 1 : 0),
         ])->save();
 
-        $site = setting('site_name', config('app.name'));
-        $this->sms->send($order->mobile, "Your $site order {$order->order_number} verification code is $code. Valid for {$cfg['expires_minutes']} minutes.");
+        // The provider's approved OTP format (Settings → SMS), e.g. "Your Neatly OTP is 123456".
+        $this->sms->send($order->mobile, $this->sms->otpMessage($code));
 
         return $code;
     }

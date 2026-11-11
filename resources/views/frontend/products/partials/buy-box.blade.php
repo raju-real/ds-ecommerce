@@ -11,7 +11,7 @@
                 <div class="gallery-thumbs">
                     @foreach($images as $i => $img)
                         <button type="button" class="{{ $i === 0 ? 'active' : '' }}" data-src="{{ img_url($img->path) }}" aria-label="Image {{ $i + 1 }}">
-                            <img src="{{ img_url($img->thumb) }}" alt="" width="72" height="72" loading="lazy">
+                            <img src="{{ img_url($img->thumb) }}" alt="{{ $product->name }} - photo {{ $i + 1 }}" width="72" height="72" loading="lazy">
                         </button>
                     @endforeach
                 </div>

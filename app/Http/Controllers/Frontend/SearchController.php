@@ -26,7 +26,6 @@ class SearchController extends Controller
         $productRows = $products->suggest($term, $cfg['suggest_limit'])->map(fn ($p) => [
             'id' => $p->id,
             'name' => $p->name,
-            'code' => $p->code,
             'url' => $p->url,
             'image' => $p->thumb_url,
             'price' => money($p->selling_price),

@@ -7,13 +7,28 @@
     <script type="application/ld+json">
         {!! json_encode([
             '@context' => 'https://schema.org',
-            '@type' => 'WebSite',
-            'name' => setting('site_name', config('app.name')),
-            'url' => route('home'),
-            'potentialAction' => [
-                '@type' => 'SearchAction',
-                'target' => route('products.index').'?q={search_term_string}',
-                'query-input' => 'required name=search_term_string',
+            '@graph' => [
+                [
+                    '@type' => 'WebSite',
+                    'name' => setting('site_name', config('app.name')),
+                    'url' => route('home'),
+                    'potentialAction' => [
+                        '@type' => 'SearchAction',
+                        'target' => route('products.index').'?q={search_term_string}',
+                        'query-input' => 'required name=search_term_string',
+                    ],
+                ],
+                // The shop itself: name, logo, contact and social pages (Google knowledge panel / brand results).
+                array_filter([
+                    '@type' => 'OnlineStore',
+                    'name' => setting('site_name', config('app.name')),
+                    'url' => route('home'),
+                    'logo' => setting('logo') ? img_url(setting('logo')) : null,
+                    'telephone' => setting('phone') ?: null,
+                    'email' => setting('email') ?: null,
+                    'address' => setting('address') ? ['@type' => 'PostalAddress', 'streetAddress' => setting('address'), 'addressCountry' => 'BD'] : null,
+                    'sameAs' => collect(['facebook', 'instagram', 'youtube', 'tiktok'])->map(fn ($k) => setting($k))->filter()->values()->all() ?: null,
+                ]),
             ],
         ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
     </script>
@@ -38,15 +53,17 @@
                         @foreach($sliders as $i => $slide)
                             @php($link = $slide->link ? (preg_match('#^https?://#', $slide->link) ? $slide->link : url($slide->link)) : null)
                             <div class="carousel-item {{ $i === 0 ? 'active' : '' }}">
-                                <img src="{{ img_url($slide->image) }}" alt="{{ $slide->title ?: 'Banner '.($i + 1) }}" width="1600" height="600" @if($i > 0) loading="lazy" @else fetchpriority="high" @endif>
-                                @if($slide->title || $slide->subtitle)
+                                <img src="{{ img_url($slide->image) }}" alt="{{ $slide->title ?: setting('site_name', config('app.name')).' - offer '.($i + 1) }}" width="1600" height="600" @if($i > 0) loading="lazy" @else fetchpriority="high" @endif>
+                                @if($slide->showsText() && ($slide->title || $slide->subtitle))
+                                    {{-- Colours and shade are set per slide (Admin → Sliders), so the text reads well on each image. --}}
+                                    @if(in_array($slide->text_shade, ['dark', 'light'], true))<div class="hero-shade hero-shade-{{ $slide->text_shade }}" aria-hidden="true"></div>@endif
                                     <div class="carousel-caption">
-                                        @if($slide->title)<h2>{{ $slide->title }}</h2>@endif
-                                        @if($slide->subtitle)<p class="mb-3">{{ $slide->subtitle }}</p>@endif
-                                        @if($link && $slide->button_text)<a href="{{ $link }}" class="btn btn-light fw-bold">{{ $slide->button_text }} <i class="bi bi-arrow-right ms-1"></i></a>@endif
+                                        @if($slide->title)<h2 @if($css = $slide->colorStyle('title')) style="{{ $css }}" @endif>{{ $slide->title }}</h2>@endif
+                                        @if($slide->subtitle)<p class="mb-3" @if($css = $slide->colorStyle('subtitle')) style="{{ $css }}" @endif>{{ $slide->subtitle }}</p>@endif
+                                        @if($link && $slide->button_text)<a href="{{ $link }}" class="btn btn-light fw-bold" @if($css = $slide->colorStyle('button')) style="{{ $css }}" @endif>{{ $slide->button_text }} <i class="bi bi-arrow-right ms-1"></i></a>@endif
                                     </div>
                                 @elseif($link)
-                                    <a href="{{ $link }}" class="stretched-link" aria-label="Open offer"></a>
+                                    <a href="{{ $link }}" class="stretched-link" aria-label="{{ $slide->title ?: 'Open offer' }}"></a>
                                 @endif
                             </div>
                         @endforeach

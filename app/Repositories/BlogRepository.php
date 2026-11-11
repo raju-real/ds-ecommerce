@@ -11,7 +11,7 @@ use Illuminate\Support\Collection;
 class BlogRepository
 {
     /** Light columns for cards and lists (no description). */
-    protected const CARD_COLUMNS = ['id', 'unique_id', 'title', 'slug', 'excerpt', 'image', 'thumb', 'is_active', 'published_at', 'updated_at'];
+    protected const CARD_COLUMNS = ['id', 'unique_id', 'title', 'slug', 'excerpt', 'image', 'thumb', 'meta_image', 'is_active', 'published_at', 'updated_at'];
 
     /**
      * Published posts, newest first. The cached list includes scheduled posts and is

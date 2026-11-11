@@ -94,6 +94,13 @@ img { max-width: 100%; }
 .hero .carousel-caption { left: 8%; right: auto; bottom: auto; top: 50%; transform: translateY(-50%); text-align: left; max-width: 55%; }
 .hero .carousel-caption h2 { font-weight: 800; font-size: clamp(1.1rem, 3.6vw, 2.8rem); letter-spacing: -.02em; text-shadow: 0 2px 20px rgba(0, 0, 0, .15); }
 .hero .carousel-caption p { font-size: clamp(.8rem, 1.6vw, 1.15rem); opacity: .95; }
+/* Optional shade behind the banner text (per slide), so text stays readable on busy images */
+.hero .carousel-item { position: relative; }
+.hero-shade { position: absolute; inset: 0; pointer-events: none; }
+.hero-shade-dark { background: linear-gradient(90deg, rgba(0, 0, 0, .55) 0%, rgba(0, 0, 0, .25) 45%, rgba(0, 0, 0, 0) 70%); }
+.hero-shade-light { background: linear-gradient(90deg, rgba(255, 255, 255, .8) 0%, rgba(255, 255, 255, .4) 45%, rgba(255, 255, 255, 0) 70%); }
+.hero-shade-light ~ .carousel-caption { color: #0f172a; }
+.hero-shade-light ~ .carousel-caption h2 { text-shadow: none; }
 .hero .carousel-indicators [data-bs-target] { width: 10px; height: 10px; border-radius: 50%; border: 0; }
 .hero .carousel-indicators .active { width: 26px; border-radius: 6px; }
 @media (max-width: 575px) { .hero .carousel-item { aspect-ratio: 16 / 8; } .hero .carousel-caption .btn { padding: .3rem .7rem; font-size: .75rem; } .hero .carousel-caption p { display: none; } }

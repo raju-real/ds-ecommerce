@@ -76,7 +76,7 @@ class ShortLinkService
 
             return $blog ? [
                 'url' => $blog->url, 'title' => $blog->title, 'description' => (string) $blog->excerpt,
-                'image' => $blog->image_url, 'price' => null, 'old_price' => null,
+                'image' => $blog->share_image_url, 'price' => null, 'old_price' => null,
             ] : null;
         }
 
@@ -90,7 +90,7 @@ class ShortLinkService
             'url' => $type === 'buy' ? route('buy-now', $product->slug) : $product->url,
             'title' => ($type === 'buy' ? 'Order now: ' : '').$product->name.' — '.$price,
             'description' => $price.($product->hasDiscount() ? ' (was '.money($product->unit_price).')' : '').' · Cash on delivery all over Bangladesh. '.Str::limit(strip_tags((string) ($product->short_description ?: $product->description)), 120),
-            'image' => $product->image_url,
+            'image' => $product->share_image_url,
             'price' => $product->selling_price,
             'old_price' => $product->hasDiscount() ? $product->unit_price : null,
         ];

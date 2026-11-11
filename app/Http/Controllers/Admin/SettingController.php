@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Repositories\SettingRepository;
 use App\Services\FacebookPixel;
 use App\Services\ImageService;
+use App\Services\SmsService;
 use App\Support\Seo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -17,10 +18,10 @@ class SettingController extends Controller
     public const FIELDS = [
         'general' => ['site_name', 'tagline', 'topbar_text', 'footer_about', 'copyright_text', 'default_delivery_charge'],
         'contact' => ['phone', 'whatsapp', 'email', 'address', 'map_embed_url', 'facebook', 'instagram', 'youtube', 'tiktok', 'messenger'],
-        'seo' => ['meta_title', 'meta_description', 'meta_keywords', 'google_analytics_id'],
+        'seo' => ['meta_title', 'meta_description', 'meta_keywords', 'google_analytics_id', 'google_site_verification'],
         // The access token is handled separately (stored encrypted, kept when the field is left empty).
-        'facebook' => ['facebook_pixel_id', 'facebook_capi_enabled', 'facebook_test_event_code'],
-        'sms' => ['sms_driver', 'sms_api_url', 'sms_api_key', 'sms_sender_id'],
+        'facebook' => ['facebook_pixel_id', 'facebook_capi_enabled', 'facebook_test_event_code', 'facebook_domain_verification'],
+        'sms' => ['sms_driver', 'sms_api_url', 'sms_api_key', 'sms_sender_id', 'sms_brand', 'sms_otp_template'],
     ];
 
     public function __construct(protected SettingRepository $settings, protected ImageService $images)
@@ -29,12 +30,18 @@ class SettingController extends Controller
 
     public function edit()
     {
-        return view('admin.settings.edit', ['s' => $this->settings->all()]);
+        return view('admin.settings.edit', ['s' => $this->settings->all(), 'sitemap' => app(\App\Support\Sitemap::class)->summary()]);
     }
 
     public function update(Request $request)
     {
         $phone = ['nullable', 'string', 'max:20', 'regex:/^\+?[0-9 \-]{6,20}$/'];
+        // Verification codes: the whole <meta …> tag may be pasted; keep only its content="…" value.
+        foreach (['google_site_verification', 'facebook_domain_verification'] as $key) {
+            if ($request->has($key)) {
+                $request->merge([$key => self::verificationCode($request->input($key))]);
+            }
+        }
         $request->validate([
             'site_name' => 'required|string|min:2|max:60',
             'tagline' => 'nullable|string|max:120',
@@ -54,12 +61,16 @@ class SettingController extends Controller
             'meta_keywords' => 'nullable|array|max:'.Seo::MAX_KEYWORDS,
             'meta_keywords.*' => 'nullable|string|max:60',
             'google_analytics_id' => ['nullable', 'string', 'max:30', 'regex:/^(G|UA)-[A-Z0-9\-]+$/'],
+            'google_site_verification' => ['nullable', 'string', 'max:100', 'regex:/^[A-Za-z0-9_\-]+$/'],
+            'facebook_domain_verification' => ['nullable', 'string', 'max:100', 'regex:/^[A-Za-z0-9_\-]+$/'],
             'facebook_pixel_id' => 'nullable|digits_between:10,20',
             'facebook_capi_enabled' => 'nullable|in:0,1',
             'facebook_capi_token' => 'nullable|string|min:20|max:1000',
             'facebook_test_event_code' => 'nullable|alpha_num|max:30',
-            'sms_driver' => 'nullable|in:log,http',
-            'sms_api_url' => 'nullable|string|max:500|starts_with:http://,https://', // contains {placeholders}, so not a strict URL
+            'sms_driver' => 'nullable|in:log,bulksmsbd,http',
+            'sms_brand' => 'nullable|string|max:40',
+            'sms_otp_template' => ['nullable', 'string', 'max:160', 'regex:/\{otp\}/'],
+            'sms_api_url' => 'nullable|string|max:500|starts_with:http://,https://|required_if:sms_driver,http', // contains {placeholders}, so not a strict URL
             'sms_api_key' => 'nullable|string|max:255',
             'sms_sender_id' => 'nullable|string|max:30',
             'logo' => upload_rules('logo'),
@@ -72,6 +83,10 @@ class SettingController extends Controller
             'google_analytics_id.regex' => 'Analytics ID looks like G-XXXXXXXXXX.',
             'facebook_capi_token.min' => 'This does not look like a Conversions API access token.',
             'facebook_test_event_code.alpha_num' => 'Test event code is letters and digits only (e.g. TEST12345).',
+            'sms_otp_template.regex' => 'The SMS text must contain {otp} (where the code goes).',
+            'sms_api_url.required_if' => 'Enter the API URL for the custom provider.',
+            'google_site_verification.regex' => 'Paste the code from Search Console (or the whole <meta name="google-site-verification" …> tag).',
+            'facebook_domain_verification.regex' => 'Paste the code from Facebook (or the whole <meta name="facebook-domain-verification" …> tag).',
         ]);
 
         $values = $request->only(array_merge(...array_values(self::FIELDS)));
@@ -108,6 +123,40 @@ class SettingController extends Controller
         $this->settings->save($values);
 
         return back()->with('success', 'Settings saved.')->withFragment($request->input('tab', ''));
+    }
+
+    /** "Check balance" on the SMS tab (BulkSMSBD, saved API key). */
+    public function smsBalance(SmsService $sms)
+    {
+        $result = $sms->balance();
+
+        return response()->json($result, $result['ok'] ? 200 : 422);
+    }
+
+    /** "Send test SMS" on the SMS tab: the OTP text with a sample code, sent with the saved settings. */
+    public function smsTest(Request $request, SmsService $sms)
+    {
+        $data = $request->validate(
+            ['mobile' => ['required', 'string', 'regex:/^(\+?880|0)?1[3-9][0-9]{8}$/']],
+            ['mobile.regex' => 'Enter a valid Bangladeshi mobile number, e.g. 017XXXXXXXX.', 'mobile.required' => 'Enter a mobile number to send the test to.'],
+        );
+        if ($sms->isLogDriver()) {
+            return response()->json(['ok' => false, 'message' => 'Choose BulkSMSBD (or a custom provider) and save first. "Log only" never sends SMS.'], 422);
+        }
+        $result = $sms->sendWithResult(preg_replace('/\s+/', '', $data['mobile']), $sms->otpMessage((string) random_int(100000, 999999)));
+
+        return response()->json($result, $result['ok'] ? 200 : 422);
+    }
+
+    /** `<meta name="…" content="abc123" />` → "abc123"; a plain code is returned trimmed; empty → null. */
+    public static function verificationCode(mixed $value): ?string
+    {
+        $value = trim((string) $value);
+        if (preg_match('/content\s*=\s*["\']([^"\']*)["\']/i', $value, $m)) {
+            $value = trim($m[1]);
+        }
+
+        return $value !== '' ? $value : null;
     }
 
     /** "Send test event" on the Facebook tab: one PageView to the Conversions API with the saved settings. */

@@ -161,48 +161,45 @@
                                 <div class="col-md-6 d-flex align-items-end">
                                     <div class="form-text mb-2"><i class="bi bi-facebook me-1"></i>Facebook Pixel is on the <a href="#pixel" data-open-tab="#pixel">Facebook Pixel</a> tab.</div>
                                 </div>
-                                <div class="col-12">
-                                    <div class="p-3 rounded-3 bg-light small">
-                                        <i class="bi bi-diagram-3 me-1"></i> Sitemap: <a href="{{ route('sitemap') }}" target="_blank">{{ route('sitemap') }}</a>
-                                        &nbsp;·&nbsp; Robots: <a href="{{ url('robots.txt') }}" target="_blank">{{ url('robots.txt') }}</a>
-                                    </div>
+                            </div>
+                        </div>
+
+                        <div class="card mt-4" id="search-console">
+                            <div class="card-header"><h5><i class="bi bi-google me-1"></i> Google Search Console & sitemap</h5></div>
+                            <div class="card-body row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label" for="google_site_verification">Search Console verification code</label>
+                                    <input type="text" name="google_site_verification" id="google_site_verification" class="form-control font-monospace @error('google_site_verification') is-invalid @enderror" value="{{ $v('google_site_verification') }}" placeholder="e.g. AbC123xYz_-…" maxlength="300" spellcheck="false" autocomplete="off">
+                                    @error('google_site_verification')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                    <div class="form-text">Search Console → Add property → <em>URL prefix</em> → HTML tag. Paste the code or the whole <code>&lt;meta name="google-site-verification" …&gt;</code> tag; it is added to the home page.</div>
                                 </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="sitemapUrl">Sitemap — submit this in Search Console → Sitemaps</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control font-monospace small" id="sitemapUrl" value="{{ route('sitemap') }}" readonly data-no-validate>
+                                        <button type="button" class="btn btn-outline-secondary" data-copy="{{ route('sitemap') }}" data-copy-msg="Sitemap link copied" title="Copy"><i class="bi bi-clipboard"></i></button>
+                                        <a href="{{ route('sitemap') }}" target="_blank" rel="noopener" class="btn btn-outline-secondary" title="Open"><i class="bi bi-box-arrow-up-right"></i></a>
+                                    </div>
+                                    <div class="small mt-2" id="sitemapSummary">
+                                        <strong>{{ number_format($sitemap['total']) }}</strong> links:
+                                        @foreach(['pages' => 'pages', 'categories' => 'categories', 'brands' => 'brands', 'products' => 'products', 'blog' => 'blog posts'] as $key => $label)
+                                            <span class="badge badge-soft-secondary">{{ number_format($sitemap['counts'][$key] ?? 0) }} {{ $label }}</span>
+                                        @endforeach
+                                        <span class="badge badge-soft-primary">{{ number_format($sitemap['images']) }} images</span>
+                                        @if($sitemap['updated'])<div class="text-muted mt-1">Last change {{ $sitemap['updated']->diffForHumans() }} · updates by itself when you add or edit products, categories, brands or posts.</div>@endif
+                                    </div>
+                                    <div class="small text-muted mt-1">Robots: <a href="{{ url('robots.txt') }}" target="_blank" rel="noopener">{{ url('robots.txt') }}</a></div>
+                                </div>
+                                @if(! request()->isSecure() && ! app()->environment('local'))
+                                    <div class="col-12"><div class="p-2 px-3 rounded-3 small bg-soft-danger"><i class="bi bi-exclamation-triangle me-1"></i>This page is open over <strong>http</strong>. Use the <strong>https</strong> address of your site in Search Console, and submit the https sitemap.</div></div>
+                                @endif
                             </div>
                         </div>
                     </div>
 
                     @include('admin.settings.facebook')
 
-                    <div class="tab-pane fade" id="sms">
-                        <div class="card">
-                            <div class="card-header"><h5>SMS gateway for OTP</h5></div>
-                            <div class="card-body row g-3">
-                                <div class="col-md-4">
-                                    <label class="form-label" for="sms_driver">Driver</label>
-                                    <select name="sms_driver" id="sms_driver" class="form-select">
-                                        <option value="log" @selected($v('sms_driver', 'log') === 'log')>Log only (testing)</option>
-                                        <option value="http" @selected($v('sms_driver') === 'http')>HTTP API (live)</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label" for="sms_api_key">API key</label>
-                                    <input type="text" name="sms_api_key" id="sms_api_key" class="form-control" value="{{ $v('sms_api_key') }}" placeholder="Your provider API key" maxlength="255" autocomplete="off">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label" for="sms_sender_id">Sender ID</label>
-                                    <input type="text" name="sms_sender_id" id="sms_sender_id" class="form-control" value="{{ $v('sms_sender_id') }}" placeholder="e.g. 8809617XXXXXX" maxlength="30">
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label" for="sms_api_url">API URL template</label>
-                                    <input type="text" name="sms_api_url" id="sms_api_url" class="form-control font-monospace small" value="{{ $v('sms_api_url') }}" maxlength="500" pattern="https?://.+" data-msg-pattern="Must start with http:// or https://" placeholder="http://bulksmsbd.net/api/smsapi?api_key={api_key}&type=text&number={number}&senderid={sender_id}&message={message}">
-                                    <div class="form-text">Placeholders: <code>{api_key}</code> <code>{sender_id}</code> <code>{number}</code> (880…) <code>{message}</code>. Works with most Bangladeshi bulk SMS providers.</div>
-                                </div>
-                                <div class="col-12">
-                                    <div class="alert alert-info border-0 small mb-0" style="border-radius: 10px"><i class="bi bi-info-circle me-1"></i> With <strong>Log only</strong>, codes are written to <code>storage/logs/laravel.log</code>, and shown on the verify page while <code>APP_DEBUG=true</code>.</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    @include('admin.settings.sms')
                 </div>
 
                 <div class="d-flex justify-content-end mt-4">

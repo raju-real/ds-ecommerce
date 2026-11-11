@@ -23,6 +23,11 @@
     <meta name="robots" content="@yield('robots', 'index, follow')">
     <link rel="canonical" href="{{ $canonical }}">
     <meta name="theme-color" content="#4f46e5">
+    @if(request()->routeIs('home'))
+        {{-- Ownership checks read the home page: Settings → SEO (Google Search Console) and Settings → Facebook Pixel. --}}
+        @if(setting('google_site_verification'))<meta name="google-site-verification" content="{{ setting('google_site_verification') }}">@endif
+        @if(setting('facebook_domain_verification'))<meta name="facebook-domain-verification" content="{{ setting('facebook_domain_verification') }}">@endif
+    @endif
 
     <meta property="og:site_name" content="{{ $siteName }}">
     <meta property="og:type" content="@yield('og_type', 'website')">

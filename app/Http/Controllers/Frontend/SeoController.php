@@ -3,21 +3,16 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
-use App\Repositories\CategoryRepository;
-use App\Repositories\ProductRepository;
+use App\Support\Sitemap;
 
 class SeoController extends Controller
 {
-    public function sitemap(ProductRepository $products, CategoryRepository $categories)
+    public function sitemap(Sitemap $sitemap)
     {
         return response()
-            ->view('frontend.sitemap', [
-                'products' => $products->sitemap(),
-                'categories' => $categories->menu(),
-                'brands' => app(\App\Repositories\BrandRepository::class)->active(),
-                'blogs' => app(\App\Repositories\BlogRepository::class)->sitemap(),
-            ])
-            ->header('Content-Type', 'application/xml');
+            ->view('frontend.sitemap', ['groups' => $sitemap->groups()])
+            ->header('Content-Type', 'application/xml; charset=UTF-8')
+            ->header('X-Robots-Tag', 'noindex'); // the file itself is not a search result
     }
 
     public function robots()
@@ -28,9 +23,15 @@ class SeoController extends Controller
             'Disallow: /cart',
             'Disallow: /checkout',
             'Disallow: /order/',
+            // Data and popup endpoints, not pages.
+            'Disallow: /search/',
+            'Disallow: /featured-products',
+            'Disallow: /locations/',
+            'Disallow: /product/*/quick-view',
+            '',
             'Sitemap: '.route('sitemap'),
         ];
 
-        return response(implode("\n", $lines))->header('Content-Type', 'text/plain');
+        return response(implode("\n", $lines)."\n")->header('Content-Type', 'text/plain; charset=UTF-8');
     }
 }

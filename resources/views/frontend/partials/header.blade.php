@@ -9,8 +9,8 @@
             @if(setting('email'))<a href="mailto:{{ setting('email') }}" class="d-none d-lg-inline"><i class="bi bi-envelope me-1"></i>{{ setting('email') }}</a>@endif
             <a href="{{ route('track') }}"><i class="bi bi-truck me-1"></i>Track Order</a>
             <span class="social d-flex gap-1">
-                @foreach(['facebook' => 'facebook', 'instagram' => 'instagram', 'youtube' => 'youtube', 'tiktok' => 'tiktok'] as $key => $icon)
-                    @if(setting($key))<a href="{{ setting($key) }}" target="_blank" rel="noopener" aria-label="{{ ucfirst($key) }}"><i class="bi bi-{{ $icon }}"></i></a>@endif
+                @foreach(['facebook' => 'Facebook', 'messenger' => 'Messenger', 'instagram' => 'Instagram', 'youtube' => 'YouTube', 'tiktok' => 'TikTok'] as $key => $label)
+                    @if(setting($key))<a href="{{ setting($key) }}" target="_blank" rel="noopener" aria-label="{{ $label }}" title="{{ $key === 'messenger' ? 'Chat on Messenger' : $label }}"><i class="bi bi-{{ $key }}"></i></a>@endif
                 @endforeach
             </span>
         </div>

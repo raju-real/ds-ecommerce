@@ -8,15 +8,16 @@
 @section('title', 'Order now: '.$product->name.' — '.$price)
 @section('description', $price.$was.' · Cash on delivery all over Bangladesh. '.($product->short_description ?: strip_tags((string) $product->description)))
 @section('og_type', 'product')
-@section('og_image', $product->image_url)
+@section('og_image', $product->share_image_url)
 @section('canonical', route('buy-now', $product->slug))
 @section('robots', 'noindex, follow')
 
 @push('head')
     <meta property="product:price:amount" content="{{ $product->selling_price }}">
     <meta property="product:price:currency" content="BDT">
-    <meta property="og:image:width" content="800">
-    <meta property="og:image:height" content="800">
+    @php([$shareW, $shareH] = $product->shareImageSize())
+    <meta property="og:image:width" content="{{ $shareW }}">
+    <meta property="og:image:height" content="{{ $shareH }}">
 @endpush
 
 @section('content')

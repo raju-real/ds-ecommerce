@@ -56,6 +56,12 @@ class Blog extends Model
         return img_url($this->image);
     }
 
+    /** Share image: the SEO "Share image" when set, else the cover (both 1200×630). */
+    public function getShareImageUrlAttribute(): string
+    {
+        return $this->meta_image ? img_url($this->meta_image) : $this->image_url;
+    }
+
     public function getThumbUrlAttribute(): string
     {
         return img_url($this->thumb ?: $this->image);

@@ -114,6 +114,18 @@ class Product extends Model
         return img_url($this->thumbnail_large ?: $this->thumbnail);
     }
 
+    /** Facebook/WhatsApp/Google share image: the SEO "Share image" (1200×630) when set, else the main photo. */
+    public function getShareImageUrlAttribute(): string
+    {
+        return $this->meta_image ? img_url($this->meta_image) : $this->image_url;
+    }
+
+    /** [width, height] of share_image_url, for og:image:width/height. */
+    public function shareImageSize(): array
+    {
+        return $this->meta_image ? config('shop.images.share') : [800, 800];
+    }
+
     /** Thumbnail first, then the optional gallery images — each item has path (large) and thumb. */
     public function gallery(): Collection
     {

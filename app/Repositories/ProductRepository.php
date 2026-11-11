@@ -45,9 +45,13 @@ class ProductRepository
         $offset = ($page - 1) * $per;
         $take = max(0, min($per, $max - $offset));
 
-        $items = $take === 0 ? collect() : ModelCache::remember(ModelCache::PRODUCTS, "home:featured:v2:$per:$page", fn () => $this->cardQuery()
-            ->where('is_featured', true)->orderByRaw('featured_order IS NULL')->orderBy('featured_order')->latest('id')->skip($offset)->take($take)->get());
-        $total = ModelCache::remember(ModelCache::PRODUCTS, 'home:featured:count', fn () => $this->cardQuery()->where('is_featured', true)->count());
+        // Products already shown under New Arrivals are left out, so the home page never shows one twice.
+        $newIds = $this->newArrivals((int) config('shop.home.new_arrivals'))->pluck('id')->all();
+        $featured = fn () => $this->cardQuery()->where('is_featured', true)->when($newIds, fn ($q) => $q->whereNotIn('id', $newIds));
+
+        $items = $take === 0 ? collect() : ModelCache::remember(ModelCache::PRODUCTS, "home:featured:v3:$per:$page", fn () => $featured()
+            ->orderByRaw('featured_order IS NULL')->orderBy('featured_order')->latest('id')->skip($offset)->take($take)->get());
+        $total = ModelCache::remember(ModelCache::PRODUCTS, 'home:featured:count:v2', fn () => $featured()->count());
         $loaded = min($offset + $items->count(), $total);
 
         return [
@@ -151,8 +155,9 @@ class ProductRepository
 
     public function sitemap(): Collection
     {
-        return ModelCache::remember(ModelCache::PRODUCTS, 'sitemap', fn () => Product::query()
-            ->where('is_active', true)->select('slug', 'updated_at')->latest('id')->get());
+        // v2: name + images for the <image:image> entries (Google Images).
+        return ModelCache::remember(ModelCache::PRODUCTS, 'sitemap:v2', fn () => Product::query()
+            ->where('is_active', true)->select('id', 'name', 'slug', 'thumbnail', 'thumbnail_large', 'meta_image', 'updated_at')->latest('id')->get());
     }
 
     /* ---------------------------------------------------------------- Admin */

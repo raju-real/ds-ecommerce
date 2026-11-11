@@ -7,7 +7,7 @@
 @section('title', $blog->meta_title ?: $blog->title)
 @section('description', $description)
 @section('og_type', 'article')
-@section('og_image', $blog->meta_image ? img_url($blog->meta_image) : $blog->image_url)
+@section('og_image', $blog->share_image_url)
 @if($blog->meta_keywords)
     @section('keywords', $blog->meta_keywords)
 @endif
@@ -89,7 +89,7 @@
                     <h2 class="blog-side-title">More to read</h2>
                     @forelse($related as $post)
                         <a href="{{ $post->url }}" class="blog-side-item">
-                            <img src="{{ $post->thumb_url }}" alt="" width="120" height="63" loading="lazy" decoding="async">
+                            <img src="{{ $post->thumb_url }}" alt="{{ $post->title }}" width="120" height="63" loading="lazy" decoding="async">
                             <span>
                                 <span class="t">{{ $post->title }}</span>
                                 <time datetime="{{ $post->published_at->toDateString() }}">{{ $post->published_at->format('d M Y') }}</time>
