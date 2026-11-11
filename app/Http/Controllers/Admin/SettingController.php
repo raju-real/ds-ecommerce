@@ -90,6 +90,12 @@ class SettingController extends Controller
         ]);
 
         $values = $request->only(array_merge(...array_values(self::FIELDS)));
+        // Shown in page titles / meta tags: store plain text ("&amp;" → "&"), the page escapes it when printing.
+        foreach (['site_name', 'tagline', 'meta_title', 'meta_description'] as $key) {
+            if (array_key_exists($key, $values)) {
+                $values[$key] = Seo::plain($values[$key]);
+            }
+        }
         if ($request->has('meta_keywords_present')) {
             $values['meta_keywords'] = Seo::keywords($request->input('meta_keywords', [])); // tags → "a, b, c"
         }

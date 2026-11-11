@@ -1,13 +1,18 @@
 @php
     $siteName = setting('site_name', config('app.name'));
-    $pageTitle = trim($__env->yieldContent('title'));
+    // @section('title', $text) stores the text already HTML-escaped ("&" → "&amp;"), and the tags below escape
+    // again when printing — which put "&amp;amp;" in titles. Read sections back as plain text first.
+    // Texts: Seo::plain also turns "&nbsp;" etc. from rich product descriptions into plain text. Links: decoded once.
+    $section = fn (string $name) => html_entity_decode(trim($__env->yieldContent($name)), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $text = fn (string $name) => (string) \App\Support\Seo::plain($__env->yieldContent($name));
+    $pageTitle = $text('title');
     $metaTitle = $pageTitle ? $pageTitle.' | '.$siteName : setting('meta_title', $siteName);
-    $metaDescription = trim($__env->yieldContent('description')) ?: setting('meta_description');
+    $metaDescription = $text('description') ?: setting('meta_description');
     // Keywords: the page's own (product, category, brand, blog), else the site keywords from Settings → SEO.
-    $metaKeywords = trim($__env->yieldContent('keywords')) ?: setting('meta_keywords');
+    $metaKeywords = $text('keywords') ?: setting('meta_keywords');
     // Share image: the page's own, else the site share image, else the logo.
-    $ogImage = trim($__env->yieldContent('og_image')) ?: collect([setting('og_image'), setting('logo')])->filter()->map(fn ($p) => img_url($p))->first();
-    $canonical = trim($__env->yieldContent('canonical')) ?: url()->current();
+    $ogImage = $section('og_image') ?: collect([setting('og_image'), setting('logo')])->filter()->map(fn ($p) => img_url($p))->first();
+    $canonical = $section('canonical') ?: url()->current();
     $whatsapp = setting('whatsapp') ? preg_replace('/\D/', '', setting('whatsapp')) : null;
     if ($whatsapp && str_starts_with($whatsapp, '01')) { $whatsapp = '88'.$whatsapp; }
 @endphp

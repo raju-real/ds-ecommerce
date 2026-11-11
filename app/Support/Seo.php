@@ -39,10 +39,39 @@ class Seo
         ];
     }
 
+    /** Text columns cleaned by plain() on every save (and by the seo:clean-entities command for older rows). */
+    public const TEXT_FIELDS = ['meta_title', 'meta_description', 'meta_keywords'];
+
+    /**
+     * Plain text for meta tags: "Toothbrush &amp; Gum Care" → "Toothbrush & Gum Care".
+     * Text pasted from web pages or AI tools often carries HTML entities; the page escapes once when printing,
+     * so a stored "&amp;" would reach Google as "&amp;amp;". Decodes repeatedly (handles "&amp;amp;"),
+     * drops tags and collapses spaces. Null/empty stays null.
+     */
+    public static function plain(?string $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+        // Real tags first; decoding after keeps text like "&lt;3" → "<3" (the page escapes it when printing).
+        $value = strip_tags($value);
+        for ($i = 0; $i < 3; $i++) {
+            $decoded = html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            if ($decoded === $value) {
+                break;
+            }
+            $value = $decoded;
+        }
+        $value = trim(preg_replace('/\s+/u', ' ', str_replace("\u{00A0}", ' ', $value)));
+
+        return $value === '' ? null : $value;
+    }
+
     /** ["Smart watch", " smart WATCH ", "bd"] → "Smart watch, bd" (trimmed, no duplicates, no commas inside). */
     public static function keywords(array|string|null $value): ?string
     {
         $list = is_array($value) ? $value : explode(',', (string) $value);
+        $list = array_map(fn ($w) => (string) self::plain((string) $w), $list);
         $seen = [];
         foreach ($list as $word) {
             $word = trim(preg_replace('/\s+/u', ' ', str_replace([',', '<', '>', '"'], ' ', (string) $word)));
@@ -72,6 +101,11 @@ class Seo
     {
         if (array_key_exists('meta_keywords', $data) || $request->has('meta_keywords_present')) {
             $data['meta_keywords'] = self::keywords($data['meta_keywords'] ?? null);
+        }
+        foreach (['meta_title', 'meta_description'] as $field) {
+            if (array_key_exists($field, $data)) {
+                $data[$field] = self::plain($data[$field]); // "&amp;" → "&" (see plain())
+            }
         }
         unset($data['meta_image'], $data['remove_meta_image']);
 
