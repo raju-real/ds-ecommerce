@@ -470,3 +470,42 @@ body:has(.note-editor.fullscreen) { overflow: hidden; }
 .seo-status:hover .seo-dot { box-shadow: 0 0 0 1px currentColor; }
 .seo-card { scroll-margin-top: 80px; }
 .row-updated { font-size: 11px; color: #94a3b8; margin-top: 2px; white-space: nowrap; }
+
+/* Colour field (Sliders): picker, #code box and reset button share one height and border, like a normal input */
+.color-field { flex-wrap: nowrap; align-items: stretch; }
+.color-field > .form-control-color { flex: 0 0 46px; width: 46px; height: auto; min-height: 0; padding: .3rem; cursor: pointer; }
+.color-field > .form-control-color::-webkit-color-swatch-wrapper { padding: 0; }
+.color-field > .form-control-color::-webkit-color-swatch { border: 0; border-radius: 6px; }
+.color-field > .form-control-color::-moz-color-swatch { border: 0; border-radius: 6px; }
+.color-field > .form-control:not(.form-control-color) { min-width: 0; }
+.color-field > .btn { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; padding: 0 .75rem; border: 1px solid #dfe3ea; background: #fff; color: #64748b; font-size: .9rem; }
+.color-field > .btn:hover { background: #f1f5f9; color: var(--brand); }
+
+/* Slide preview (Sliders list + edit page): same look as the home page banner (shop.css .hero), scaled down */
+.slide-preview .carousel-item { position: relative; aspect-ratio: 16 / 6; border-radius: 12px; overflow: hidden; background: #ddd; border: 1px solid #e5e7eb; }
+.slide-preview .carousel-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.slide-preview .carousel-caption { position: absolute; left: 7%; right: auto; top: 0; bottom: 0; transform: none; text-align: left; max-width: 55%; color: #fff; padding: 4% 0 4.5%; display: flex; flex-direction: column; }
+.slide-preview .hero-text { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
+.slide-preview .carousel-caption h2 { font-weight: 800; font-size: 1.05rem; line-height: 1.15; margin: 0 0 .25rem; letter-spacing: -.02em; text-shadow: 0 2px 20px rgba(0, 0, 0, .15); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.slide-preview .carousel-caption p { font-size: .72rem; opacity: .95; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.slide-preview .hero-btn { align-self: flex-start; margin-top: .4rem; flex: 0 0 auto; }
+.slide-preview .hero-text .hero-btn { margin-top: .5rem; }
+.slide-preview .hero-btn-float { position: absolute; bottom: 12%; z-index: 2; }
+.slide-preview .hero-btn-float.hero-btn-bottom_center { left: 50%; transform: translateX(-50%); }
+.slide-preview .hero-btn-float.hero-btn-bottom_right { right: 7%; }
+.slide-preview .hero-btn-float .hero-btn { margin: 0; white-space: nowrap; }
+.slide-preview .carousel-caption .btn { font-size: .68rem; padding: .2rem .55rem; pointer-events: none; }
+.slide-preview .hero-shade { position: absolute; inset: 0; pointer-events: none; }
+.slide-preview .hero-shade-dark { background: linear-gradient(90deg, rgba(0, 0, 0, .55) 0%, rgba(0, 0, 0, .25) 45%, rgba(0, 0, 0, 0) 70%); }
+.slide-preview .hero-shade-light { background: linear-gradient(90deg, rgba(255, 255, 255, .8) 0%, rgba(255, 255, 255, .4) 45%, rgba(255, 255, 255, 0) 70%); }
+.slide-preview .hero-shade-light ~ .carousel-caption { color: #0f172a; }
+.slide-preview .hero-shade-light ~ .carousel-caption h2 { text-shadow: none; }
+.slide-preview-flat .carousel-item { border-radius: 0; border: 0; }   /* inside a card */
+/* Scale text and button with the preview's own width (cqw = 1% of it), in the same proportions as the
+   home page banner (~1116px wide: title 2.8rem ≈ 4%, subtitle ≈ 1.65%, button ≈ 1.45%), so any preview size looks like the site. */
+.slide-preview { container-type: inline-size; }
+.slide-preview .carousel-caption h2 { font-size: max(9px, 4cqw); }
+.slide-preview .carousel-caption p { font-size: max(6.5px, 1.65cqw); }
+.slide-preview .hero-btn, .slide-preview .carousel-caption .btn, .slide-preview .hero-btn-float .btn { font-size: max(6.5px, 1.45cqw); padding: .55cqw 1.35cqw; border-radius: max(4px, .9cqw); line-height: 1.5; pointer-events: none; }
+.slide-preview .hero-text .hero-btn { margin-top: 1.1cqw; }
+.slide-preview .carousel-caption > .hero-btn { margin-top: 1cqw; }

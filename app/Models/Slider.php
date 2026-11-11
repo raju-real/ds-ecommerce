@@ -16,7 +16,20 @@ class Slider extends Model
     protected static array $cacheGroups = [ModelCache::SLIDERS];
 
     protected $fillable = ['title', 'subtitle', 'button_text', 'link', 'image', 'sort_order', 'is_active',
-        'title_color', 'subtitle_color', 'button_color', 'button_text_color', 'text_shade', 'show_text'];
+        'title_color', 'subtitle_color', 'button_color', 'button_text_color', 'text_shade', 'show_text', 'button_position'];
+
+    public const BUTTON_POSITIONS = [
+        'below_text' => 'Right below the text',
+        'bottom_left' => 'Bottom left',
+        'bottom_center' => 'Bottom center',
+        'bottom_right' => 'Bottom right',
+    ];
+
+    /** Button position, bottom_left when not set (or before the migration). */
+    public function buttonPosition(): string
+    {
+        return array_key_exists((string) $this->button_position, self::BUTTON_POSITIONS) ? $this->button_position : 'bottom_left';
+    }
 
     /** Show title / subtitle / button on the banner? (true until the show_text migration has run) */
     public function showsText(): bool

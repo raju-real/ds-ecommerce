@@ -57,11 +57,21 @@
                                 @if($slide->showsText() && ($slide->title || $slide->subtitle))
                                     {{-- Colours and shade are set per slide (Admin → Sliders), so the text reads well on each image. --}}
                                     @if(in_array($slide->text_shade, ['dark', 'light'], true))<div class="hero-shade hero-shade-{{ $slide->text_shade }}" aria-hidden="true"></div>@endif
-                                    <div class="carousel-caption">
-                                        @if($slide->title)<h2 @if($css = $slide->colorStyle('title')) style="{{ $css }}" @endif>{{ $slide->title }}</h2>@endif
-                                        @if($slide->subtitle)<p class="mb-3" @if($css = $slide->colorStyle('subtitle')) style="{{ $css }}" @endif>{{ $slide->subtitle }}</p>@endif
-                                        @if($link && $slide->button_text)<a href="{{ $link }}" class="btn btn-light fw-bold" @if($css = $slide->colorStyle('button')) style="{{ $css }}" @endif>{{ $slide->button_text }} <i class="bi bi-arrow-right ms-1"></i></a>@endif
+                                    {{-- Button position per slide: below_text | bottom_left (in the caption) | bottom_center | bottom_right (floating). --}}
+                                    @php($btnPos = $slide->buttonPosition())
+                                    @php($hasBtn = $link && $slide->button_text)
+                                    <div class="carousel-caption btn-pos-{{ $btnPos }}">
+                                        <div class="hero-text">
+                                            @if($slide->title)<h2 @if($css = $slide->colorStyle('title')) style="{{ $css }}" @endif>{{ $slide->title }}</h2>@endif
+                                            @if($slide->subtitle)<p @if($css = $slide->colorStyle('subtitle')) style="{{ $css }}" @endif>{{ $slide->subtitle }}</p>@endif
+                                            @if($hasBtn && $btnPos === 'below_text')@include('frontend.partials.hero-button')@endif
+                                        </div>
+                                        @if($hasBtn && $btnPos === 'bottom_left')@include('frontend.partials.hero-button')@endif
+                                        @if($hasBtn && in_array($btnPos, ['bottom_center', 'bottom_right'], true))<span class="btn btn-light fw-bold hero-btn hero-btn-spacer" aria-hidden="true">{{ $slide->button_text }} <i class="bi bi-arrow-right ms-1"></i></span>@endif
                                     </div>
+                                    @if($hasBtn && in_array($btnPos, ['bottom_center', 'bottom_right'], true))
+                                        <div class="hero-btn-float hero-btn-{{ $btnPos }}">@include('frontend.partials.hero-button')</div>
+                                    @endif
                                 @elseif($link)
                                     <a href="{{ $link }}" class="stretched-link" aria-label="{{ $slide->title ?: 'Open offer' }}"></a>
                                 @endif

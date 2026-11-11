@@ -59,10 +59,25 @@
                                 <input type="text" name="link" id="link" class="form-control" value="{{ old('link', $slider->link) }}" placeholder="category/electronics or https://…" maxlength="255">
                             </div>
                             <div class="col-12 mt-1"><div class="form-text mt-0">Link: a path inside the store or a full URL. The button shows when both text and link are set.</div></div>
+                            <div class="col-md-5" data-text-only>
+                                <label class="form-label" for="button_position">Button position</label>
+                                <select name="button_position" id="button_position" class="form-select">
+                                    @foreach(\App\Models\Slider::BUTTON_POSITIONS as $key => $label)
+                                        <option value="{{ $key }}" @selected(old('button_position', $slider->buttonPosition()) === $key)>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-7 d-flex align-items-end" data-text-only>
+                                <div class="btn-group w-100" role="group" aria-label="Button position quick pick">
+                                    @foreach(['below_text' => 'bi-text-left', 'bottom_left' => 'bi-align-start', 'bottom_center' => 'bi-align-center', 'bottom_right' => 'bi-align-end'] as $key => $icon)
+                                        <button type="button" class="btn btn-outline-secondary" data-btn-pos="{{ $key }}" title="{{ \App\Models\Slider::BUTTON_POSITIONS[$key] }}"><i class="bi {{ $icon }}"></i></button>
+                                    @endforeach
+                                </div>
+                            </div>
                             <div class="col-md-5" data-text-only>@include('admin.sliders.partials.color', ['key' => 'button_color', 'label' => 'Button background', 'default' => '#f8f9fa'])</div>
                             <div class="col-md-5" data-text-only>@include('admin.sliders.partials.color', ['key' => 'button_text_color', 'label' => 'Button text colour', 'default' => '#212529'])</div>
                             <div class="col-md-2 d-flex align-items-end" data-text-only>
-                                <span class="btn btn-light btn-sm fw-bold w-100 text-truncate" id="buttonSwatch" title="Button preview" style="pointer-events:none">Shop now</span>
+                                <span class="btn btn-light fw-bold w-100 text-truncate border" id="buttonSwatch" title="Button preview" style="pointer-events:none">Shop now</span>
                             </div>
 
                             {{-- Look --}}
@@ -112,10 +127,14 @@
                                 <img id="slidePreview" src="{{ $editing ? img_url($slider->image) : '' }}" alt="">
                                 <div class="hero-shade" data-pv-shade aria-hidden="true"></div>
                                 <div class="carousel-caption">
-                                    <h2 data-pv="title"></h2>
-                                    <p class="mb-2" data-pv="subtitle"></p>
-                                    <span class="btn btn-light btn-sm fw-bold" data-pv="button"></span>
+                                    <div class="hero-text">
+                                        <h2 data-pv="title"></h2>
+                                        <p data-pv="subtitle"></p>
+                                    </div>
+                                    <span class="btn btn-light btn-sm fw-bold hero-btn" data-pv="button"></span>
+                                    <span class="btn btn-light btn-sm fw-bold hero-btn" data-pv-spacer aria-hidden="true" style="visibility:hidden"></span>
                                 </div>
+                                <div class="hero-btn-float" data-pv-float></div>
                             </div>
                         </div>
                         <input type="file" name="image" class="form-control @error('image') is-invalid @enderror" {!! upload_attrs('slider') !!} data-preview="#slidePreview" {{ $editing ? '' : 'required' }} data-msg-required="Please choose a banner image.">
@@ -128,23 +147,6 @@
         </div>
     </form>
 @endsection
-
-@push('styles')
-    <style>
-        /* Same look as the home page banner (shop.css .hero), scaled to the preview box */
-        .slide-preview .carousel-item { position: relative; aspect-ratio: 16 / 6; border-radius: 12px; overflow: hidden; background: #ddd; border: 1px solid #e5e7eb; }
-        .slide-preview .carousel-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .slide-preview .carousel-caption { position: absolute; left: 8%; right: auto; top: 50%; bottom: auto; transform: translateY(-50%); text-align: left; max-width: 60%; color: #fff; padding: 0; }
-        .slide-preview .carousel-caption h2 { font-weight: 800; font-size: 1.05rem; margin: 0 0 .25rem; letter-spacing: -.02em; text-shadow: 0 2px 20px rgba(0, 0, 0, .15); }
-        .slide-preview .carousel-caption p { font-size: .72rem; opacity: .95; }
-        .slide-preview .carousel-caption .btn { font-size: .68rem; padding: .2rem .55rem; pointer-events: none; }
-        .slide-preview .hero-shade { position: absolute; inset: 0; pointer-events: none; }
-        .slide-preview .hero-shade-dark { background: linear-gradient(90deg, rgba(0, 0, 0, .55) 0%, rgba(0, 0, 0, .25) 45%, rgba(0, 0, 0, 0) 70%); }
-        .slide-preview .hero-shade-light { background: linear-gradient(90deg, rgba(255, 255, 255, .8) 0%, rgba(255, 255, 255, .4) 45%, rgba(255, 255, 255, 0) 70%); }
-        .slide-preview .hero-shade-light ~ .carousel-caption { color: #0f172a; }
-        .slide-preview .hero-shade-light ~ .carousel-caption h2 { text-shadow: none; }
-    </style>
-@endpush
 
 @push('page-scripts')
     <script>
@@ -159,6 +161,17 @@
                 t.textContent = title; t.style.display = title ? '' : 'none'; t.style.color = code('title_color');
                 s.textContent = sub; s.style.display = sub ? '' : 'none'; s.style.color = code('subtitle_color');
                 b.textContent = btn; b.style.display = btn && $f('#link').value.trim() ? '' : 'none';
+                // Put the preview button where the website will show it.
+                const pos = $f('#button_position').value, float = $f('[data-pv-float]');
+                float.className = 'hero-btn-float hero-btn-' + pos;
+                if (pos === 'below_text') $f('.slide-preview .hero-text').appendChild(b);
+                else if (pos === 'bottom_left') $f('.slide-preview .carousel-caption').appendChild(b);
+                else float.appendChild(b);
+                const spacer = $f('[data-pv-spacer]');
+                spacer.textContent = btn;
+                spacer.style.display = b.style.display !== 'none' && (pos === 'bottom_center' || pos === 'bottom_right') ? '' : 'none';
+                float.style.display = $f('#show_text').checked ? '' : 'none';
+                document.querySelectorAll('[data-btn-pos]').forEach((x) => x.classList.toggle('active', x.dataset.btnPos === pos));
                 paintButton(b);
                 const sw = $f('#buttonSwatch');
                 sw.textContent = btn || 'Shop now';
@@ -171,6 +184,8 @@
                 document.querySelectorAll('[data-text-only]').forEach((el) => el.classList.toggle('opacity-50', !on));
             };
             $f('#show_text').addEventListener('change', render);
+            $f('#button_position').addEventListener('change', render);
+            document.querySelectorAll('[data-btn-pos]').forEach((x) => x.addEventListener('click', () => { $f('#button_position').value = x.dataset.btnPos; render(); }));
             document.querySelectorAll('[data-color-field]').forEach((g) => {
                 const picker = g.querySelector('[data-color-picker]'), text = g.querySelector('[data-color-code]');
                 picker.addEventListener('input', () => { text.value = picker.value; render(); });

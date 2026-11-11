@@ -93,6 +93,7 @@ class SliderController extends Controller
             'button_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'button_text_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'text_shade' => 'nullable|in:'.implode(',', array_keys(Slider::SHADES)),
+            'button_position' => 'nullable|in:'.implode(',', array_keys(Slider::BUTTON_POSITIONS)),
         ], [
             'title.required' => 'Please enter a title (also used as the image description for Google).',
             'subtitle.required' => 'Please enter a subtitle.',
@@ -115,6 +116,10 @@ class SliderController extends Controller
         $data['is_active'] = $request->boolean('is_active');
         if (\Illuminate\Support\Facades\Schema::hasColumn('sliders', 'show_text')) {
             $data['show_text'] = $request->boolean('show_text');
+        }
+        $data['button_position'] = $data['button_position'] ?? 'bottom_left';
+        if (! \Illuminate\Support\Facades\Schema::hasColumn('sliders', 'button_position')) {
+            unset($data['button_position']); // migration not run yet
         }
 
         return $data;

@@ -91,9 +91,20 @@ img { max-width: 100%; }
 .hero .carousel-item { border-radius: var(--radius); overflow: hidden; aspect-ratio: 16 / 6; background: #ddd; }
 .hero .carousel-item img { width: 100%; height: 100%; object-fit: cover; }
 .hero .carousel-control-prev, .hero .carousel-control-next { width: 6%; }
-.hero .carousel-caption { left: 8%; right: auto; bottom: auto; top: 50%; transform: translateY(-50%); text-align: left; max-width: 55%; }
-.hero .carousel-caption h2 { font-weight: 800; font-size: clamp(1.1rem, 3.6vw, 2.8rem); letter-spacing: -.02em; text-shadow: 0 2px 20px rgba(0, 0, 0, .15); }
-.hero .carousel-caption p { font-size: clamp(.8rem, 1.6vw, 1.15rem); opacity: .95; }
+/* Caption fills the banner height: text in the space above, button pinned bottom-left, so they never overlap.
+   Long text is cut to 2 lines instead of running into the button. (Padding % is of the width: 4.5% ≈ 12% of the banner height.) */
+.hero .carousel-caption { left: 7%; right: auto; top: 0; bottom: 0; transform: none; text-align: left; max-width: 55%; padding: 4% 0 4.5%; display: flex; flex-direction: column; }
+.hero .carousel-caption .hero-text { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
+.hero .carousel-caption h2 { font-weight: 800; font-size: clamp(1.1rem, 3.6vw, 2.8rem); line-height: 1.15; letter-spacing: -.02em; text-shadow: 0 2px 20px rgba(0, 0, 0, .15); margin-bottom: .4rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.hero .carousel-caption p { font-size: clamp(.8rem, 1.6vw, 1.15rem); opacity: .95; margin-bottom: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.hero .carousel-caption .hero-btn { flex: 0 0 auto; align-self: flex-start; margin-top: .75rem; }
+/* Button position (per slide, Admin → Sliders) */
+.hero .carousel-caption .hero-text .hero-btn { margin-top: .9rem; }                      /* below_text: right under the subtitle */
+.hero .carousel-caption .hero-btn-spacer { visibility: hidden; pointer-events: none; }        /* keeps the text above a center/right button */
+.hero-btn-float { position: absolute; bottom: 12%; z-index: 2; }  /* same line as bottom_left, above the dots */
+.hero-btn-float.hero-btn-bottom_center { left: 50%; transform: translateX(-50%); }
+.hero-btn-float.hero-btn-bottom_right { right: 7%; }
+.hero-btn-float .hero-btn { white-space: nowrap; }
 /* Optional shade behind the banner text (per slide), so text stays readable on busy images */
 .hero .carousel-item { position: relative; }
 .hero-shade { position: absolute; inset: 0; pointer-events: none; }
@@ -103,7 +114,7 @@ img { max-width: 100%; }
 .hero-shade-light ~ .carousel-caption h2 { text-shadow: none; }
 .hero .carousel-indicators [data-bs-target] { width: 10px; height: 10px; border-radius: 50%; border: 0; }
 .hero .carousel-indicators .active { width: 26px; border-radius: 6px; }
-@media (max-width: 575px) { .hero .carousel-item { aspect-ratio: 16 / 8; } .hero .carousel-caption .btn { padding: .3rem .7rem; font-size: .75rem; } .hero .carousel-caption p { display: none; } }
+@media (max-width: 575px) { .hero .carousel-item { aspect-ratio: 16 / 8; } .hero .carousel-caption { padding: 5% 0 5.5%; max-width: 62%; } .hero .carousel-caption .btn { padding: .3rem .7rem; font-size: .75rem; } .hero .carousel-caption .hero-btn { margin-top: .4rem; } .hero-btn-float { bottom: 20%; } .hero .carousel-caption.btn-pos-bottom_center, .hero .carousel-caption.btn-pos-bottom_right { padding-bottom: 9%; } .hero-btn-float .btn { padding: .3rem .7rem; font-size: .75rem; } .hero .carousel-caption p { display: none; } }
 
 /* Feature strip */
 .features .feature { background: #fff; border-radius: var(--radius); padding: 1rem; display: flex; gap: .85rem; align-items: center; box-shadow: var(--shadow-sm); height: 100%; }

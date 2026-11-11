@@ -27,10 +27,10 @@
             <div class="col-md-6 col-xl-4 slider-sort-item" data-uid="{{ $slide->unique_id }}">
                 <div class="card h-100 overflow-hidden">
                     <div class="position-relative">
-                        <img src="{{ img_url($slide->image) }}" class="w-100" style="aspect-ratio: 16/6; object-fit: cover" alt="" loading="lazy">
-                        <span class="position-absolute top-0 start-0 m-2">{!! $slide->is_active ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-secondary">Hidden</span>' !!}</span>
-                        @unless($slide->showsText())<span class="position-absolute bottom-0 start-0 m-2 badge bg-dark bg-opacity-75"><i class="bi bi-eye-slash me-1"></i>Text hidden</span>@endunless
-                        <span class="position-absolute top-0 end-0 m-2 d-flex gap-1 align-items-center">
+                        @include('admin.sliders.partials.preview')
+                        <span class="position-absolute top-0 start-0 m-2 slide-badge">{!! $slide->is_active ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-secondary">Hidden</span>' !!}</span>
+                        @unless($slide->showsText())<span class="position-absolute bottom-0 start-0 m-2 badge bg-dark bg-opacity-75 slide-badge"><i class="bi bi-eye-slash me-1"></i>Text hidden</span>@endunless
+                        <span class="position-absolute top-0 end-0 m-2 d-flex gap-1 align-items-center slide-badge">
                             <span class="badge bg-dark" data-position title="Position on the home page">#{{ $loop->iteration }}</span>
                             @if($sliders->count() > 1)<button type="button" class="btn btn-light btn-sm py-0 px-1 sort-handle" title="Drag to reorder" aria-label="Drag to reorder"><i class="bi bi-grip-vertical"></i></button>@endif
                         </span>
@@ -55,6 +55,7 @@
 @push('styles')
     <style>
         #sliderSort .sort-handle { cursor: grab; line-height: 1.4; }
+        #sliderSort .slide-badge { z-index: 5; }   /* above the preview text/button */
         #sliderSort .sort-ghost > .card { opacity: .4; outline: 2px dashed #4f46e5; }
     </style>
 @endpush
