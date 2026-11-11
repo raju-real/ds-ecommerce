@@ -115,6 +115,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::post('editor/images', [Admin\EditorController::class, 'image'])->middleware('throttle:60,1')->name('editor.image');
         Route::get('seo/keywords', [Admin\SeoController::class, 'keywords'])->name('seo.keywords');
+        Route::post('seo/slug', [Admin\SeoController::class, 'slug'])->middleware('throttle:60,1')->name('seo.slug');
         Route::resource('districts', Admin\DistrictController::class)->except('show');
         Route::resource('thanas', Admin\ThanaController::class)->except('show');
 

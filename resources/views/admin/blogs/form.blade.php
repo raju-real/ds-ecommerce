@@ -37,7 +37,10 @@
                             @error('title')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="mb-3">
-                            <label class="form-label" for="slug">URL slug</label>
+                            <div class="slug-label-row">
+                                <label class="form-label" for="slug">URL slug</label>
+                                @include('admin.partials.slug-generator', ['type' => 'blog', 'id' => $blog->id])
+                            </div>
                             <div class="input-group">
                                 <span class="input-group-text small">{{ url('/blog') }}/</span>
                                 <input type="text" name="slug" id="slug" class="form-control @error('slug') is-invalid @enderror" value="{{ old('slug', $blog->slug) }}"

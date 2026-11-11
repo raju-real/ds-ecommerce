@@ -355,6 +355,37 @@
     });
     $(document).on('input', '[data-slug]', function () { $(this).data('touched', true); });
 
+    /* Slug "Generate": text → slug from the server (same rules as saving, -2 when already used) → into the slug field.
+       <div data-slug-gen data-url data-type data-target data-id> (partial: admin/partials/slug-generator) */
+    function generateSlug($box) {
+        const $text = $box.find('[data-slug-gen-text]'), $btn = $box.find('[data-slug-gen-btn]');
+        const $slug = $($box.data('target'));
+        const $note = $slug.closest('.input-group').siblings('.slug-gen-note').length
+            ? $slug.closest('.input-group').siblings('.slug-gen-note')
+            : $('<div class="slug-gen-note small mt-1"></div>').insertAfter($slug.closest('.input-group'));
+        const text = $text.val().trim();
+        if (!text) { $note.attr('class', 'slug-gen-note small mt-1 text-danger').text('Type or paste the text for the URL first.'); $text.trigger('focus'); return; }
+        $btn.prop('disabled', true);
+        $.post($box.data('url'), { type: $box.data('type'), text, id: $box.data('id') || '' })
+            .done((r) => {
+                $slug.val(r.slug).data('touched', true).removeClass('is-invalid').trigger('input').trigger('change');
+                $slug.removeClass('slug-flash'); void $slug[0].offsetWidth; $slug.addClass('slug-flash');
+                $note.attr('class', 'slug-gen-note small mt-1 ' + (r.taken ? 'text-warning' : 'text-success'))
+                    .html(r.taken
+                        ? '<i class="bi bi-exclamation-circle me-1"></i>"' + escHtml(r.base) + '" is already used, so <strong>' + escHtml(r.slug) + '</strong> was set.'
+                        : '<i class="bi bi-check-circle me-1"></i>Slug set. Save to keep it.');
+            })
+            .fail((x) => {
+                const j = x.responseJSON || {};
+                $note.attr('class', 'slug-gen-note small mt-1 text-danger').text((j.errors && Object.values(j.errors)[0][0]) || j.message || 'Could not generate the slug.');
+            })
+            .always(() => $btn.prop('disabled', false));
+    }
+    $(document).on('click', '[data-slug-gen-btn]', function () { generateSlug($(this).closest('[data-slug-gen]')); });
+    $(document).on('keydown', '[data-slug-gen-text]', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); generateSlug($(this).closest('[data-slug-gen]')); } // never submits the form
+    });
+
     /* Flash */
     $(function () {
         const f = window.ADMIN_FLASH || {};

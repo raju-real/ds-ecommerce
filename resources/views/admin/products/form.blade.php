@@ -55,7 +55,10 @@
                                 <input type="text" name="code" class="form-control" value="{{ old('code', $product->code) }}" placeholder="e.g. DS-0001" required maxlength="60" pattern="[A-Za-z0-9_-]+" data-msg-pattern="Use only letters, numbers, dashes and underscores.">
                             </div>
                             <div class="col-12">
-                                <label class="form-label">Slug (URL)</label>
+                                <div class="slug-label-row">
+                                    <label class="form-label" for="slug">Slug (URL)</label>
+                                    @include('admin.partials.slug-generator', ['type' => 'product', 'id' => $product->id])
+                                </div>
                                 <div class="input-group">
                                     <span class="input-group-text">/product/</span>
                                     <input type="text" name="slug" id="slug" class="form-control" value="{{ old('slug', $product->slug) }}" data-slug placeholder="auto-generated-from-name" maxlength="200" pattern="[A-Za-z0-9_-]+" data-msg-pattern="Use only letters, numbers, dashes and underscores.">

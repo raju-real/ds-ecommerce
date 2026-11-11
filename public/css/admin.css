@@ -510,3 +510,13 @@ body:has(.note-editor.fullscreen) { overflow: hidden; }
 .slide-preview .hero-text .hero-btn { margin-top: 1.1cqw; }
 .slide-preview .carousel-caption > .hero-btn { margin-top: 1cqw; }
 .slide-preview .hero-btn-spacer { visibility: hidden; }
+
+/* Slug "Generate" (products, blog): sits on the right of the Slug label */
+.slug-label-row { display: flex; justify-content: space-between; align-items: flex-end; gap: .5rem; flex-wrap: wrap; margin-bottom: .5rem; }
+.slug-label-row .form-label { margin-bottom: 0; }
+.slug-gen { width: 340px; max-width: 100%; flex-wrap: nowrap; }
+.slug-gen .form-control { font-size: .82rem; padding: .35rem .65rem; border-radius: 8px 0 0 8px; }
+.slug-gen .btn { font-size: .8rem; padding: .35rem .7rem; border-radius: 0 8px 8px 0; white-space: nowrap; }
+@media (max-width: 575px) { .slug-gen { width: 100%; } }
+.slug-flash { animation: slugFlash 1.2s ease-out; }
+@keyframes slugFlash { 0% { background-color: #dcfce7; } 100% { background-color: #fff; } }

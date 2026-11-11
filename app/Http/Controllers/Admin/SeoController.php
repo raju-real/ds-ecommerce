@@ -44,4 +44,31 @@ class SeoController extends Controller
 
         return response()->json($rows->take(15)->values());
     }
+
+    /**
+     * "Generate" next to the Slug field (products, blog): the slug exactly as saving would make it —
+     * same conversion (Str::slug) and a -2, -3 … ending when another product / post already uses it.
+     * {type: product|blog, text, id?} → {slug, taken, base}
+     */
+    public function slug(Request $request)
+    {
+        $data = $request->validate([
+            'type' => 'required|in:product,blog',
+            'text' => 'required|string|max:250',
+            'id' => 'nullable|integer|min:1',
+        ], [
+            'text.required' => 'Type or paste the text for the URL first.',
+        ]);
+        $model = $data['type'] === 'product' ? \App\Models\Product::class : \App\Models\Blog::class;
+        $max = $data['type'] === 'product' ? 200 : 180; // same limits as the forms
+
+        $base = \Illuminate\Support\Str::slug(Seo::plain($data['text']) ?? '');
+        if ($base === '') {
+            return response()->json(['message' => 'No letters or numbers to use. Write a few words, e.g. "baby toothbrush set".'], 422);
+        }
+        $base = rtrim(mb_substr($base, 0, $max - 4), '-'); // room for a -2 … ending
+        $slug = $model::uniqueSlug($base, $data['id'] ?? null);
+
+        return response()->json(['slug' => $slug, 'base' => $base, 'taken' => $slug !== $base]);
+    }
 }
