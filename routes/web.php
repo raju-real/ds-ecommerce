@@ -121,6 +121,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::get('reports', [Admin\ReportController::class, 'index'])->name('reports');
         Route::get('settings', [Admin\SettingController::class, 'edit'])->name('settings');
+        Route::get('cache', [Admin\CacheController::class, 'index'])->name('cache');
+        Route::post('cache/refresh', [Admin\CacheController::class, 'refresh'])->middleware('throttle:10,1')->name('cache.refresh');
         Route::post('settings', [Admin\SettingController::class, 'update'])->name('settings.update');
         Route::post('settings/facebook-test', [Admin\SettingController::class, 'facebookTest'])->middleware('throttle:10,1')->name('settings.facebook-test');
         Route::post('settings/sms-balance', [Admin\SettingController::class, 'smsBalance'])->middleware('throttle:20,1')->name('settings.sms-balance');

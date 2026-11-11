@@ -2,6 +2,25 @@
 
 use Illuminate\Support\Str;
 
+/*
+|--------------------------------------------------------------------------
+| Cache settings — set here, not in .env
+|--------------------------------------------------------------------------
+| After changing a value, on the server run:  php artisan config:cache
+| Check it with:  php artisan cache:check   or   Admin → Settings → Cache
+*/
+
+$cacheStore = 'redis'; // file | redis
+
+$redisServer = [
+    'client' => 'phpredis',   // phpredis (PHP extension) | predis (composer package)
+    'host' => '127.0.0.1',
+    'password' => null,       // null = no password
+    'port' => 6379,
+    'prefix' => 'neatly_',    // every key starts with this
+    'database' => 1,          // Redis database number used for the cache
+];
+
 return [
 
     /*
@@ -9,14 +28,21 @@ return [
     | Default Cache Store
     |--------------------------------------------------------------------------
     |
-    | This option controls the default cache connection that gets used while
-    | using this caching library. This connection is used when another is
-    | not explicitly specified when executing a given caching function.
+    | The store really used. Safety net: if Redis is chosen but this PHP cannot talk to it (phpredis extension
+    | not installed, or predis package missing), the file cache is used instead of an error on every page.
     |
     */
 
-    // 'default' => env('CACHE_DRIVER', 'file'),
-    'default' => 'redis',
+    'default' => $cacheStore === 'redis'
+        && ! ($redisServer['client'] === 'predis' ? class_exists(\Predis\Client::class) : extension_loaded('redis'))
+        ? 'file'
+        : $cacheStore,
+
+    // What is set above (the cache checker compares it with "default").
+    'requested' => $cacheStore,
+
+    // Redis server for the cache; AppServiceProvider copies it into the "redis" settings of config/database.php.
+    'redis_server' => $redisServer,
 
     /*
     |--------------------------------------------------------------------------

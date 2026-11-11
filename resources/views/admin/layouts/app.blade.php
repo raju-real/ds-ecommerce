@@ -71,6 +71,7 @@
                 ['Districts & charges', 'admin.districts.index', ['admin.districts.*']],
                 ['Thanas', 'admin.thanas.index', ['admin.thanas.*']],
                 ['Site settings', 'admin.settings', ['admin.settings', 'admin.settings.*']],
+                ['Cache', 'admin.cache', ['admin.cache', 'admin.cache.*']],
             ]])
         </nav>
     </aside>

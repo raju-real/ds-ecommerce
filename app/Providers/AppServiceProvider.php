@@ -20,6 +20,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        // Redis for the cache is set in config/cache.php ("redis_server"), not in .env: use it for Laravel's
+        // Redis connections ("cache" for cached data, "default" for cache locks), before anything is cached.
+        if (is_array($redis = config('cache.redis_server'))) {
+            $server = ['url' => null, 'host' => $redis['host'], 'password' => $redis['password'], 'port' => $redis['port']];
+            config([
+                'database.redis.client' => $redis['client'],
+                'database.redis.options.prefix' => $redis['prefix'],
+                'database.redis.cache' => $server + ['database' => $redis['database']],
+                'database.redis.default' => $server + ['database' => config('database.redis.default.database', 0)],
+            ]);
+        }
+
         // One instance per request so settings are read from cache only once.
         $this->app->singleton(SettingRepository::class);
         $this->app->singleton(CartService::class);

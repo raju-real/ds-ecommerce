@@ -101,8 +101,9 @@ img { max-width: 100%; }
 /* Button position (per slide, Admin → Sliders) */
 .hero .carousel-caption .hero-text .hero-btn { margin-top: .9rem; }                      /* below_text: right under the subtitle */
 .hero .carousel-caption .hero-btn-spacer { visibility: hidden; pointer-events: none; }
+.hero .carousel-caption.btn-pos-bottom_center, .hero .carousel-caption.btn-pos-bottom_right { padding-bottom: max(4.5%, 2.4rem); } /* same line as the floating button */
 .hero .carousel-caption.no-btn { pointer-events: none; }   /* no button: clicks on the text reach the banner link */        /* keeps the text above a center/right button */
-.hero-btn-float { position: absolute; bottom: 12%; z-index: 2; }  /* same line as bottom_left, above the dots */
+.hero-btn-float { position: absolute; bottom: max(12%, 2.4rem); z-index: 2; }  /* same line as bottom_left, above the dots */
 .hero-btn-float.hero-btn-bottom_center { left: 50%; transform: translateX(-50%); }
 .hero-btn-float.hero-btn-bottom_right { right: 7%; }
 .hero-btn-float .hero-btn { white-space: nowrap; }
@@ -115,7 +116,23 @@ img { max-width: 100%; }
 .hero-shade-light ~ .carousel-caption h2 { text-shadow: none; }
 .hero .carousel-indicators [data-bs-target] { width: 10px; height: 10px; border-radius: 50%; border: 0; }
 .hero .carousel-indicators .active { width: 26px; border-radius: 6px; }
-@media (max-width: 575px) { .hero .carousel-item { aspect-ratio: 16 / 8; } .hero .carousel-caption { padding: 5% 0 5.5%; max-width: 62%; } .hero .carousel-caption .btn { padding: .3rem .7rem; font-size: .75rem; } .hero .carousel-caption .hero-btn { margin-top: .4rem; } .hero-btn-float { bottom: 20%; } .hero .carousel-caption.btn-pos-bottom_center, .hero .carousel-caption.btn-pos-bottom_right { padding-bottom: 9%; } .hero-btn-float .btn { padding: .3rem .7rem; font-size: .75rem; } .hero .carousel-caption p { display: none; } }
+/* Phones: same 16:6 shape as the uploaded banner (1600×600), so the whole image fits — nothing is cut off at the sides
+   (16:8 used to crop about a quarter on each side, where the banner text usually is). Smaller button and dots to fit the shorter banner. */
+@media (max-width: 575px) {
+    .hero .carousel-item { aspect-ratio: 16 / 6; border-radius: 12px; }
+    .hero .carousel-caption { padding: 4% 0 4.5%; max-width: 62%; }
+    .hero .carousel-caption h2 { font-size: clamp(.85rem, 4.6vw, 1.1rem); margin-bottom: .2rem; }
+    .hero .carousel-caption .btn, .hero-btn-float .btn { padding: .2rem .55rem; font-size: .68rem; border-radius: 6px; }
+    .hero .carousel-caption .hero-btn, .hero .carousel-caption .hero-text .hero-btn { margin-top: .3rem; }
+    .hero-btn-float { bottom: 22%; }
+    .hero .carousel-caption.btn-pos-bottom_center, .hero .carousel-caption.btn-pos-bottom_right { padding-bottom: 8%; }
+    .hero .carousel-caption p { display: none; }
+    .hero .carousel-indicators { margin-bottom: .35rem; }
+    .hero .carousel-indicators [data-bs-target] { width: 6px; height: 6px; margin: 0 3px; }
+    .hero .carousel-indicators .active { width: 16px; }
+    .hero .carousel-control-prev, .hero .carousel-control-next { width: 10%; }
+    .hero .carousel-control-prev-icon, .hero .carousel-control-next-icon { width: 1.1rem; height: 1.1rem; }
+}
 
 /* Feature strip */
 .features .feature { background: #fff; border-radius: var(--radius); padding: 1rem; display: flex; gap: .85rem; align-items: center; box-shadow: var(--shadow-sm); height: 100%; }
