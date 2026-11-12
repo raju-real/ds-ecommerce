@@ -70,14 +70,69 @@ class SmsService
         return strtr($template, ['{brand}' => $brand, '{otp}' => $code]);
     }
 
+    public const ADMIN_STATUS_KEY = 'sms_admin_last';
+    public const ADMIN_MAX_NUMBERS = 10;
+
+    /** Admin numbers for new-order alerts (Settings → SMS), as saved: 01XXXXXXXXX each. */
+    public function adminNumbers(): array
+    {
+        return array_values(array_filter(array_map('trim', explode(',', (string) setting('sms_admin_numbers'))),
+            fn ($n) => preg_match('/^01[3-9]\d{8}$/', $n)));
+    }
+
+    public function adminNotifyEnabled(): bool
+    {
+        return setting('sms_admin_notify') === '1' && $this->adminNumbers() !== [];
+    }
+
+    /** "New order placed - NT-00012" */
+    public static function adminOrderMessage(string $orderNumber): string
+    {
+        return 'New order placed - '.$orderNumber;
+    }
+
+    /**
+     * A short SMS to every admin number when a customer places an order (after their OTP SMS).
+     * Sent after the response, so the customer never waits for it. Does nothing when switched off.
+     */
+    public function notifyAdminsOfOrder(\App\Models\Order $order): void
+    {
+        if (! $this->adminNotifyEnabled()) {
+            return;
+        }
+        $numbers = $this->adminNumbers();
+        $message = self::adminOrderMessage($order->order_number);
+        app()->terminating(function () use ($numbers, $message) {
+            $sent = 0;
+            $errors = [];
+            foreach ($numbers as $number) {
+                $r = $this->sendWithResult($number, $message, self::ADMIN_STATUS_KEY);
+                $r['ok'] ? $sent++ : $errors[] = $number.': '.$r['message'];
+            }
+            Cache::put(self::ADMIN_STATUS_KEY, [
+                'ok' => $errors === [], 'at' => now()->toIso8601String(), 'to' => count($numbers).' number(s)',
+                'message' => $errors === [] ? "\"$message\" sent to $sent number(s)." : "Sent $sent of ".count($numbers).'. '.implode(' · ', $errors),
+            ], now()->addDays(30));
+        });
+    }
+
+    public function lastAdminStatus(): ?array
+    {
+        return Cache::get(self::ADMIN_STATUS_KEY);
+    }
+
     /** Send and return only whether it worked (used by the checkout). */
     public function send(string $mobile, string $message): bool
     {
         return $this->sendWithResult($mobile, $message)['ok'];
     }
 
-    /** @return array{ok: bool, message: string} */
-    public function sendWithResult(string $mobile, string $message): array
+    /**
+     * $statusKey: STATUS_KEY = shown as "Last SMS" on the SMS tab; admin alerts write their own combined status instead.
+     *
+     * @return array{ok: bool, message: string}
+     */
+    public function sendWithResult(string $mobile, string $message, string $statusKey = self::STATUS_KEY): array
     {
         if ($this->isLogDriver()) {
             Log::info("[SMS to $mobile] $message");
@@ -97,7 +152,7 @@ class SmsService
         if (! $result['ok']) {
             Log::error('SMS failed: '.$result['message'], ['to' => $number]);
         }
-        Cache::put(self::STATUS_KEY, $result + ['at' => now()->toIso8601String(), 'to' => substr($number, 0, 5).'****'.substr($number, -2)], now()->addDays(30));
+        if ($statusKey === self::STATUS_KEY) Cache::put(self::STATUS_KEY, $result + ['at' => now()->toIso8601String(), 'to' => substr($number, 0, 5).'****'.substr($number, -2)], now()->addDays(30));
 
         return $result;
     }

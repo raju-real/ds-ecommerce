@@ -10,6 +10,20 @@ use Illuminate\Support\Facades\DB;
 
 class OrderRepository
 {
+    /** Orders have a vat_amount column (migration 2026_11_13_000001)? Checked once per request. */
+    protected static function hasVat(): bool
+    {
+        static $has = null;
+
+        return $has ??= \Illuminate\Support\Facades\Schema::hasColumn('orders', 'vat_amount');
+    }
+
+    /** Costs deducted from profit besides the vendor cost: courier cost and VAT we pay (SQL). */
+    protected static function extraCosts(): string
+    {
+        return self::hasVat() ? '(courier_cost + vat_amount)' : 'courier_cost';
+    }
+
     public function adminPaginate(array $filters)
     {
         $key = 'admin:list:'.ModelCache::hash($filters + ['page' => request('page', 1)]);
@@ -65,12 +79,12 @@ class OrderRepository
 
             // toBase(): plain rows, so the "profit" alias isn't shadowed by Order::getProfitAttribute().
             $sum = fn (Carbon $from) => (array) Order::query()->where('created_at', '>=', $from)->tap($valid)
-                ->selectRaw('COUNT(*) as orders, COALESCE(SUM(total),0) as revenue, COALESCE(SUM(total - cost_total - courier_cost),0) as profit')
+                ->selectRaw('COUNT(*) as orders, COALESCE(SUM(total),0) as revenue, COALESCE(SUM(total - cost_total - '.self::extraCosts().'),0) as profit')
                 ->toBase()->first();
 
             $days = collect(range(13, 0))->map(fn ($i) => now()->subDays($i)->toDateString());
             $daily = Order::query()->where('created_at', '>=', now()->subDays(13)->startOfDay())->tap($valid)
-                ->selectRaw('DATE(created_at) as d, COUNT(*) as orders, SUM(total) as revenue, SUM(total - cost_total - courier_cost) as profit')
+                ->selectRaw('DATE(created_at) as d, COUNT(*) as orders, SUM(total) as revenue, SUM(total - cost_total - '.self::extraCosts().') as profit')
                 ->groupBy('d')->toBase()->get()->keyBy('d');
 
             return [
@@ -102,7 +116,8 @@ class OrderRepository
             $summary = (array) Order::query()->tap($valid)->selectRaw(
                 'COUNT(*) as orders, COALESCE(SUM(subtotal),0) as subtotal, COALESCE(SUM(delivery_charge),0) as delivery,
                  COALESCE(SUM(total),0) as revenue, COALESCE(SUM(cost_total),0) as cost, COALESCE(SUM(courier_cost),0) as courier,
-                 COALESCE(SUM(total - cost_total - courier_cost),0) as profit'
+                 '.(self::hasVat() ? 'COALESCE(SUM(vat_amount),0)' : '0').' as vat,
+                 COALESCE(SUM(total - cost_total - '.self::extraCosts().'),0) as profit'
             )->toBase()->first();
 
             $vendors = DB::table('order_items')

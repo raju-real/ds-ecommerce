@@ -91,6 +91,7 @@ class CheckoutController extends Controller
 
         $order = $this->orders->place($data, $lines);
         $code = $this->orders->sendOtp($order);
+        $sms->notifyAdminsOfOrder($order); // "New order placed - NT-00012" to the admin numbers (Settings → SMS), after the response
 
         $this->cart->clear();
         $request->session()->push('placed_orders', $order->order_number);

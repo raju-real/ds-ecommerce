@@ -89,6 +89,7 @@
                                 <div class="row-line"><span class="text-muted">Collected from customer</span><span>{{ money($order->total) }}</span></div>
                                 <div class="row-line"><span class="text-muted">Vendor cost (drop shipping)</span><span>-{{ money($order->cost_total) }}</span></div>
                                 <div class="row-line"><span class="text-muted">Courier cost</span><span>-{{ money($order->courier_cost) }}</span></div>
+                                <div class="row-line"><span class="text-muted">VAT (paid by you)</span><span>-{{ money($order->vat_amount ?? 0) }}</span></div>
                                 <hr class="my-2">
                                 <div class="d-flex justify-content-between align-items-end">
                                     <span class="small text-muted">Net profit</span>
@@ -167,8 +168,14 @@
                             <input type="text" name="address" class="form-control" value="{{ $order->address }}" placeholder="House no, road, area, landmark" required minlength="10" maxlength="500">
                             <div class="form-text"><i class="bi bi-geo-alt"></i> {{ optional($order->thana)->name }}, {{ optional($order->district)->name }}</div>
                         </div>
-                        <div class="col-md-6"><label class="form-label">Delivery charge</label><div class="input-group"><span class="input-group-text">৳</span><input type="number" step="0.01" min="0" max="9999" name="delivery_charge" class="form-control" value="{{ $order->delivery_charge }}" placeholder="0" required></div></div>
-                        <div class="col-md-6"><label class="form-label">Discount</label><div class="input-group"><span class="input-group-text">৳</span><input type="number" step="0.01" min="0" max="9999999" name="discount" class="form-control" value="{{ $order->discount }}" placeholder="0" required></div></div>
+                        <div class="col-md-4"><label class="form-label" for="delivery_charge">Delivery charge</label><div class="input-group"><span class="input-group-text">৳</span><input type="number" step="0.01" min="0" max="9999" name="delivery_charge" id="delivery_charge" class="form-control" value="{{ $order->delivery_charge }}" placeholder="0" required></div><div class="form-text">Charged to the customer</div></div>
+                        <div class="col-md-4"><label class="form-label" for="discount">Discount</label><div class="input-group"><span class="input-group-text">৳</span><input type="number" step="0.01" min="0" max="9999999" name="discount" id="discount" class="form-control" value="{{ $order->discount }}" placeholder="0" required></div><div class="form-text">Taken off the customer's total</div></div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="vat_amount">VAT</label>
+                            <div class="input-group"><span class="input-group-text">৳</span><input type="number" step="0.01" min="0" max="9999999" name="vat_amount" id="vat_amount" class="form-control @error('vat_amount') is-invalid @enderror" value="{{ old('vat_amount', $order->vat_amount ?? 0) }}" placeholder="0.00" data-msg-min="VAT cannot be negative."></div>
+                            @error('vat_amount')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                            <div class="form-text">Your cost — deducted from profit (amount, not %)</div>
+                        </div>
                         <div class="col-12"><label class="form-label">Admin note</label><textarea name="admin_note" rows="2" class="form-control" placeholder="Internal note (not visible to the customer)" maxlength="1000" data-counter>{{ $order->admin_note }}</textarea></div>
                         @if($order->note)<div class="col-12"><div class="p-3 rounded-3 bg-light small"><strong>Customer note:</strong> {{ $order->note }}</div></div>@endif
                         <div class="col-12 text-end"><button class="btn btn-soft-primary"><i class="bi bi-check2 me-1"></i> Save details</button></div>

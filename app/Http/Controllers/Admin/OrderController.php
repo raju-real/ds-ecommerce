@@ -137,12 +137,21 @@ class OrderController extends Controller
             'address' => 'required|string|min:10|max:500',
             'delivery_charge' => 'required|numeric|min:0|max:9999',
             'discount' => 'required|numeric|min:0|max:9999999',
+            'vat_amount' => 'nullable|numeric|min:0|max:9999999', // VAT we pay — an amount, not a percentage
             'admin_note' => 'nullable|string|max:1000',
+        ], [
+            'vat_amount.numeric' => 'VAT must be a number, e.g. 25 or 25.50.',
+            'vat_amount.min' => 'VAT cannot be negative.',
         ]);
 
         $model = Order::findByUidOrFail($order);
         // The customer's coupon discount stays; "discount" is the extra manual discount given here.
         $data['total'] = max(0, $model->subtotal + $data['delivery_charge'] - $model->coupon_discount - $data['discount']);
+        // VAT is our cost (deducted from profit, like the courier cost); the customer's total does not change.
+        $data['vat_amount'] = round((float) ($data['vat_amount'] ?? 0), 2);
+        if (! \Illuminate\Support\Facades\Schema::hasColumn('orders', 'vat_amount')) {
+            unset($data['vat_amount']); // migration not run yet
+        }
         $model->update($data);
 
         return back()->with('success', 'Order details saved.');

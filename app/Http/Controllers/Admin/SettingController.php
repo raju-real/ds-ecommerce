@@ -91,7 +91,28 @@ class SettingController extends Controller
             'facebook_domain_verification.regex' => 'Paste the code from Facebook (or the whole <meta name="facebook-domain-verification" …> tag).',
         ]);
 
+        // Admin order alerts (SMS tab): on/off + up to 10 mobile numbers, 11 digits each.
+        if ($request->has('sms_admin_present')) {
+            $request->merge(['sms_admin_numbers' => array_values(array_filter(array_map(
+                fn ($n) => preg_replace('/[\s\-]/', '', (string) $n), (array) $request->input('sms_admin_numbers', [])), 'strlen'))]);
+            $request->validate([
+                'sms_admin_notify' => 'nullable|in:0,1',
+                'sms_admin_numbers' => 'array|max:'.\App\Services\SmsService::ADMIN_MAX_NUMBERS,
+                'sms_admin_numbers.*' => ['regex:/^01[3-9]\d{8}$/'],
+            ], [
+                'sms_admin_numbers.max' => 'Add at most '.\App\Services\SmsService::ADMIN_MAX_NUMBERS.' numbers.',
+                'sms_admin_numbers.*.regex' => 'Each number must be 11 digits, like 01712345678.',
+            ]);
+            if ($request->boolean('sms_admin_notify') && ! $request->input('sms_admin_numbers')) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['sms_admin_numbers' => 'Add at least one mobile number to turn order notifications on.']);
+            }
+        }
+
         $values = $request->only(array_merge(...array_values(self::FIELDS)));
+        if ($request->has('sms_admin_present')) {
+            $values['sms_admin_notify'] = $request->boolean('sms_admin_notify') ? '1' : '0';
+            $values['sms_admin_numbers'] = implode(',', array_unique($request->input('sms_admin_numbers', []))) ?: null;
+        }
         // Shown in page titles / meta tags: store plain text ("&amp;" → "&"), the page escapes it when printing.
         foreach (['site_name', 'tagline', 'meta_title', 'meta_description'] as $key) {
             if (array_key_exists($key, $values)) {

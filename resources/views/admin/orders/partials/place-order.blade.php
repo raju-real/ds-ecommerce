@@ -68,6 +68,7 @@
             @if(($order->coupon_discount ?? 0) + $order->discount > 0)<div><span>Discount</span><strong class="text-success">-{{ money(($order->coupon_discount ?? 0) + $order->discount) }}</strong></div>@endif
             <div><span>Vendor price</span><strong>{{ money($order->cost_total) }}</strong></div>
             @if($order->courier_cost > 0)<div><span>Courier cost</span><strong>{{ money($order->courier_cost) }}</strong></div>@endif
+            @if(($order->vat_amount ?? 0) > 0)<div><span>VAT</span><strong>{{ money($order->vat_amount) }}</strong></div>@endif
             <div class="po-profit"><span>Profit</span><strong class="{{ $order->profit >= 0 ? 'text-success' : 'text-danger' }}">{{ money($order->profit) }}</strong></div>
             <div class="po-cod"><span>Total price (COD)</span><strong>{{ money($order->total) }}</strong></div>
         </div>

@@ -37,7 +37,7 @@
     <div class="row g-3 mb-4">
         <div class="col-6 col-xl-3"><div class="card stat-card"><span class="icon bg-soft-primary"><i class="bi bi-receipt"></i></span><div><div class="label">Orders (excl. cancelled)</div><div class="value">{{ number_format($s['orders']) }}</div></div></div></div>
         <div class="col-6 col-xl-3"><div class="card stat-card"><span class="icon bg-soft-info"><i class="bi bi-currency-exchange"></i></span><div><div class="label">Revenue</div><div class="value">{{ money($s['revenue']) }}</div><div class="sub">incl. {{ money($s['delivery']) }} delivery</div></div></div></div>
-        <div class="col-6 col-xl-3"><div class="card stat-card"><span class="icon bg-soft-warning"><i class="bi bi-shop"></i></span><div><div class="label">Vendor + courier cost</div><div class="value">{{ money($s['cost'] + $s['courier']) }}</div><div class="sub">{{ money($s['cost']) }} + {{ money($s['courier']) }}</div></div></div></div>
+        <div class="col-6 col-xl-3"><div class="card stat-card"><span class="icon bg-soft-warning"><i class="bi bi-shop"></i></span><div><div class="label">Vendor + courier + VAT</div><div class="value">{{ money($s['cost'] + $s['courier'] + ($s['vat'] ?? 0)) }}</div><div class="sub">{{ money($s['cost']) }} + {{ money($s['courier']) }} + {{ money($s['vat'] ?? 0) }} VAT</div></div></div></div>
         <div class="col-6 col-xl-3"><div class="card stat-card"><span class="icon bg-soft-success"><i class="bi bi-graph-up-arrow"></i></span><div><div class="label">Net profit</div><div class="value text-success">{{ money($s['profit']) }}</div><div class="sub">{{ $s['revenue'] > 0 ? round($s['profit'] / $s['revenue'] * 100, 1) : 0 }}% margin</div></div></div></div>
     </div>
 

@@ -96,6 +96,70 @@
             </div>
         </div>
     </div>
+
+    {{-- Admin order notifications: a short SMS to these numbers for every new order --}}
+    @php
+        $adminNumbers = old('sms_admin_present') ? (array) old('sms_admin_numbers', []) : $smsService->adminNumbers();
+        $adminOn = (old('sms_admin_present') ? old('sms_admin_notify') : setting('sms_admin_notify')) === '1';
+        $adminStatus = $smsService->lastAdminStatus();
+        $maxNumbers = \App\Services\SmsService::ADMIN_MAX_NUMBERS;
+    @endphp
+    <div class="card mt-4" id="adminSms">
+        <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h5><i class="bi bi-bell me-1"></i> Admin order notifications</h5>
+            @if($adminOn && $adminNumbers)
+                <span class="badge badge-soft-success"><i class="bi bi-check-circle me-1"></i>On · {{ count($adminNumbers) }} {{ \Illuminate\Support\Str::plural('number', count($adminNumbers)) }}</span>
+            @else
+                <span class="badge badge-soft-secondary">Off</span>
+            @endif
+        </div>
+        <div class="card-body row g-3">
+            <input type="hidden" name="sms_admin_present" value="1">
+            <div class="col-12">
+                <input type="hidden" name="sms_admin_notify" value="0">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" name="sms_admin_notify" id="sms_admin_notify" value="1" @checked($adminOn)>
+                    <label class="form-check-label fw-semibold" for="sms_admin_notify">Send me an SMS for every new order</label>
+                </div>
+                <div class="form-text">When a customer places an order (right after their OTP SMS), every number below gets: <strong class="text-body">{{ \App\Services\SmsService::adminOrderMessage('NT-00012') }}</strong></div>
+            </div>
+            <div class="col-lg-7">
+                <label class="form-label">Mobile numbers <span class="text-muted fw-normal">(11 digits, up to {{ $maxNumbers }})</span></label>
+                <div id="adminNumbers" data-max="{{ $maxNumbers }}">
+                    @foreach($adminNumbers ?: [''] as $i => $n)
+                        <div class="input-group mb-2 admin-number">
+                            <span class="input-group-text"><i class="bi bi-phone"></i></span>
+                            <input type="tel" name="sms_admin_numbers[]" class="form-control @error("sms_admin_numbers.$i") is-invalid @enderror" value="{{ $n }}" placeholder="01XXXXXXXXX"
+                                   maxlength="11" inputmode="numeric" pattern="01[3-9][0-9]{8}" data-digits data-msg-pattern="11 digits, like 01712345678." aria-label="Admin mobile number">
+                            <button type="button" class="btn btn-outline-secondary" data-remove-number title="Remove this number" aria-label="Remove this number"><i class="bi bi-x-lg"></i></button>
+                            @error("sms_admin_numbers.$i")<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                    @endforeach
+                </div>
+                @error('sms_admin_numbers')<div class="text-danger small mb-2">{{ $message }}</div>@enderror
+                <button type="button" class="btn btn-soft-primary btn-sm" id="addAdminNumber"><i class="bi bi-plus-lg me-1"></i> Add number</button>
+            </div>
+            <div class="col-lg-5">
+                <div class="p-3 rounded-3 bg-light small h-100">
+                    <div class="fw-semibold mb-1">How it works</div>
+                    <ul class="mb-0 ps-3">
+                        <li>One short SMS per number for each order.</li>
+                        <li>Sent after the customer's page has loaded — checkout is never slower.</li>
+                        <li>Uses the SMS provider above (costs one SMS per number).</li>
+                        <li>Not sent when a customer only asks for a new OTP.</li>
+                    </ul>
+                </div>
+            </div>
+            @if($adminStatus)
+                <div class="col-12">
+                    <div class="p-2 px-3 rounded-3 small {{ $adminStatus['ok'] ? 'bg-soft-success' : 'bg-soft-danger' }}" id="adminSmsLastStatus">
+                        <i class="bi {{ $adminStatus['ok'] ? 'bi-check-circle' : 'bi-exclamation-triangle' }} me-1"></i>
+                        <strong>Last order alert</strong> {{ \Illuminate\Support\Carbon::parse($adminStatus['at'])->diffForHumans() }}: {{ $adminStatus['message'] }}
+                    </div>
+                </div>
+            @endif
+        </div>
+    </div>
 </div>
 
 @push('page-scripts')
@@ -132,6 +196,26 @@
             balBtn.addEventListener('click', () => run(balBtn, document.getElementById('smsBalanceResult'), {}));
             const testBtn = document.getElementById('smsTestBtn');
             testBtn.addEventListener('click', () => run(testBtn, document.getElementById('smsTestResult'), { mobile: document.getElementById('smsTestMobile').value.trim() }));
+
+            // Admin numbers: add / remove rows (at least one row stays, empty rows are ignored on save).
+            const list = document.getElementById('adminNumbers'), addBtn = document.getElementById('addAdminNumber');
+            const max = +list.dataset.max;
+            const refresh = () => { addBtn.disabled = list.querySelectorAll('.admin-number').length >= max; };
+            addBtn.addEventListener('click', () => {
+                const row = list.querySelector('.admin-number').cloneNode(true);
+                const input = row.querySelector('input');
+                input.value = ''; input.classList.remove('is-invalid', 'is-valid');
+                row.querySelectorAll('.invalid-feedback').forEach((e) => e.remove());
+                list.appendChild(row); refresh(); input.focus();
+            });
+            list.addEventListener('click', (e) => {
+                const btn = e.target.closest('[data-remove-number]');
+                if (!btn) return;
+                const rows = list.querySelectorAll('.admin-number');
+                if (rows.length > 1) btn.closest('.admin-number').remove(); else rows[0].querySelector('input').value = '';
+                refresh();
+            });
+            refresh();
         })();
     </script>
 @endpush

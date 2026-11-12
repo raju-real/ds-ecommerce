@@ -25,6 +25,7 @@ class Order extends Model
         'total' => 'float',
         'cost_total' => 'float',
         'courier_cost' => 'float',
+        'vat_amount' => 'float',
         'otp_verified' => 'boolean',
         'otp_verified_at' => 'datetime',
         'otp_expires_at' => 'datetime',
@@ -69,10 +70,10 @@ class Order extends Model
         return $this->belongsTo(Thana::class)->withTrashed(); // history keeps showing deleted records
     }
 
-    /** Profit = what the customer pays - vendor cost - what we pay the courier. */
+    /** Profit = what the customer pays - vendor cost - what we pay the courier - VAT we pay. */
     public function getProfitAttribute(): float
     {
-        return round($this->total - $this->cost_total - $this->courier_cost, 2);
+        return round($this->total - $this->cost_total - $this->courier_cost - (float) $this->vat_amount, 2);
     }
 
     public function getStatusLabelAttribute(): string
