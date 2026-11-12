@@ -425,7 +425,7 @@
 
             const slugEl = q('#slug');
             const slug = (slugEl && slugEl.value.trim()) || slugify(name) || (cfg.type + '-url');
-            box.querySelector('[data-pv-url]').textContent = 'https://' + cfg.host + ' › ' + cfg.type + ' › ' + slug;
+            box.querySelector('[data-pv-url]').textContent = 'https://' + cfg.host + (cfg.type === 'page' ? '' : ' › ' + cfg.type) + ' › ' + slug; // pages live at /{slug}
 
             box.querySelector('[data-pv-title]').textContent = cutWidth(title, 600);
             box.querySelector('[data-pv-desc]').textContent = desc || 'No description yet — Google will pick text from the page.';

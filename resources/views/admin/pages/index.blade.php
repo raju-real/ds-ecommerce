@@ -39,7 +39,7 @@
                                     @endif
                                     <div class="min-w-0">
                                         <a href="{{ route('admin.pages.edit', $page->unique_id) }}" class="title d-block text-truncate cell-title" style="max-width: 360px">{{ $page->name }}</a>
-                                        <div class="small text-muted text-truncate" style="max-width: 360px">/page/{{ $page->slug }}</div>
+                                        <div class="small text-muted text-truncate" style="max-width: 360px">/{{ $page->slug }}</div>
                                     </div>
                                 </div>
                             </td>

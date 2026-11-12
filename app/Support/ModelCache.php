@@ -29,7 +29,7 @@ class ModelCache
     public const SHORTLINK_STATS = 'shortlink-stats';  // admin list with click counts (bumped on every counted click)
     public const NOTIFICATIONS = 'notifications';
     public const COUPONS = 'coupons';
-    public const PAGES = 'pages';                // Website → Pages (footer links, /page/{slug})
+    public const PAGES = 'pages';                // Website → Pages (footer links, /{slug} e.g. /privacy-policy)
 
     /** Per-request memo so each group's version is read from the store once. */
     protected static array $versions = [];

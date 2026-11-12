@@ -19,7 +19,8 @@ Route::get('/product/{slug}/quick-view', [Frontend\ProductController::class, 'qu
 Route::get('/brand/{slug}', [Frontend\ProductController::class, 'brand'])->name('brand.show');
 Route::get('/blog', [Frontend\BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{slug}', [Frontend\BlogController::class, 'show'])->name('blog.show');
-Route::get('/page/{slug}', [Frontend\PageController::class, 'show'])->name('page.show');
+// Old /page/{slug} links → the short address (pages are at /{slug}, see the end of this file).
+Route::get('/page/{slug}', [Frontend\PageController::class, 'legacy'])->name('page.legacy');
 Route::get('/search/suggest', [Frontend\SearchController::class, 'suggest'])->middleware('throttle:search')->name('search.suggest');
 
 // Shareable direct-order link (social posts): adds the product and opens checkout.
@@ -137,3 +138,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('cache/clear', [Admin\DashboardController::class, 'clearCache'])->name('cache.clear');
     });
 });
+
+/*
+|--------------------------------------------------------------------------
+| Pages (Admin → Website → Pages) at the top level: /privacy-policy, /about-us …
+|--------------------------------------------------------------------------
+| Must stay LAST: every shop and admin address above is matched first. A page can never take a
+| name used above (Page::reservedSlugs), and unknown names are a normal 404.
+*/
+Route::get('/{slug}', [Frontend\PageController::class, 'show'])->where('slug', '[A-Za-z0-9_-]+')->name('page.show');

@@ -14,7 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
-/** Website → Pages: build pages (About us, Privacy policy …) shown at /page/{slug} and linked from the footer. */
+/** Website → Pages: build pages (About us, Privacy policy …) shown at /{slug} (e.g. /privacy-policy) and linked from the footer. */
 class PageController extends Controller
 {
     public function __construct(protected PageRepository $pages, protected ImageService $images)

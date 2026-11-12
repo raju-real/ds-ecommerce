@@ -78,11 +78,11 @@
                             @include('admin.partials.slug-generator', ['type' => 'page', 'id' => $page->id])
                         </div>
                         <div class="input-group">
-                            <span class="input-group-text small">{{ url('/page') }}/</span>
+                            <span class="input-group-text small">{{ url('/') }}/</span>
                             <input type="text" name="slug" id="slug" class="form-control @error('slug') is-invalid @enderror" value="{{ old('slug', $page->slug) }}"
                                    placeholder="{{ $page->slug ?: 'generated-from-the-name' }}" maxlength="180" pattern="[A-Za-z0-9_-]+" data-msg-pattern="Use letters, numbers, dashes and underscores only." data-slug>
                         </div>
-                        <div class="form-text">Leave empty to create it from the name. Changing it later breaks links that were already shared.</div>
+                        <div class="form-text">Opens at <strong>{{ url('/') }}/your-slug</strong>. Leave empty to create it from the name. Names the shop already uses (blog, products, checkout …) get a number added. Changing it later breaks links that were already shared.</div>
                         @error('slug')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
 
@@ -99,7 +99,7 @@
         </div>
 
         @include('admin.partials.seo-fields', ['model' => $page,
-            'preview' => ['type' => 'page', 'path' => url('/page').'/', 'name' => '#name', 'desc' => ['[name="content"]'], 'image' => '#pageImagePreview'],
+            'preview' => ['type' => 'page', 'path' => url('/').'/', 'name' => '#name', 'desc' => ['[name="content"]'], 'image' => '#pageImagePreview'],
             'titleHint' => 'Defaults to the page name', 'descHint' => 'Defaults to the first lines of the content (~155 characters)', 'imageHint' => 'Leave empty to use the page image (or the site share image).'])
 
         <div class="d-flex justify-content-end gap-2 mt-4">
