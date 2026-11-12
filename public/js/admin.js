@@ -8,6 +8,37 @@
     const Toast = Swal.mixin({ toast: true, position: 'bottom-end', showConfirmButton: false, timer: 3000, timerProgressBar: true, returnFocus: false, focusConfirm: false, customClass: { container: 'admin-toast' } });
     window.notify = (title, icon = 'success') => Toast.fire({ icon, title });
 
+    /* Courier success ratio (order page + Settings → Courier check): summary line + table, like the vendor panel.
+       data = CourierRatioService::check() → {ok, message, rows: [{name,total,delivered,cancelled,ratio}], summary, raw, cached_at} */
+    window.renderCourierRatio = function (el, data) {
+        const e = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        const pct = (v) => (+v).toFixed(2).replace(/\.?0+$/, '') + '%';
+        const cls = (r, total) => (!total ? 'text-muted' : r >= 80 ? 'text-success' : r >= 50 ? 'text-warning' : 'text-danger');
+        if (!data || !data.ok) {
+            el.innerHTML = `<div class="p-3 rounded-3 bg-soft-danger small"><i class="bi bi-exclamation-triangle me-1"></i>${e(data && data.message || 'Could not check this number.')}</div>`;
+            return;
+        }
+        let html = '';
+        if (data.rows && data.rows.length) {
+            const s = data.summary || { total: 0, delivered: 0, cancelled: 0, ratio: 0 };
+            html += `<div class="cr-summary">
+                <span class="text-primary">Total Parcels: ${e(s.total)}</span><span class="sep">|</span>
+                <span class="text-success">Delivered: ${e(s.delivered)}</span><span class="sep">|</span>
+                <span class="text-danger">Cancelled: ${e(s.cancelled)}</span><span class="sep">|</span>
+                <span class="${cls(s.ratio, s.total)}">Ratio: ${pct(s.ratio)}</span></div>`;
+            html += '<div class="table-responsive"><table class="table table-sm align-middle mb-0 cr-table"><thead><tr><th>Courier</th><th class="text-center">Total Parcels</th><th class="text-center">Delivered</th><th class="text-center">Cancelled</th><th class="text-center">Ratio</th></tr></thead><tbody>';
+            data.rows.forEach((r) => {
+                html += `<tr><td class="fw-semibold">${e(r.name)}</td><td class="text-center">${e(r.total)}</td><td class="text-center">${e(r.delivered)}</td><td class="text-center">${e(r.cancelled)}</td><td class="text-center fw-semibold ${cls(r.ratio, r.total)}">${pct(r.ratio)}</td></tr>`;
+            });
+            html += '</tbody></table></div>';
+            if (!s.total) html += '<div class="small text-muted mt-2"><i class="bi bi-info-circle me-1"></i>No parcels found for this number — a new customer.</div>';
+        } else {
+            html += `<div class="small text-muted mb-2"><i class="bi bi-info-circle me-1"></i>${e(data.message)}</div><pre class="cr-raw">${e(JSON.stringify(data.raw, null, 2))}</pre>`;
+        }
+        if (data.cached_at) html += `<div class="small text-muted mt-2">Checked ${e(new Date(data.cached_at).toLocaleString())} · saved for 6 hours</div>`;
+        el.innerHTML = html;
+    };
+
     /* Sidebar: off-canvas on mobile, icon-only collapse on desktop (remembered per browser) */
     const isDesktop = () => window.matchMedia('(min-width: 992px)').matches;
     const isCollapsed = () => isDesktop() && document.body.classList.contains('sidebar-collapsed');

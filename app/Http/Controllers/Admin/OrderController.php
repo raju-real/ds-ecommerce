@@ -157,6 +157,14 @@ class OrderController extends Controller
         return back()->with('success', 'Order details saved.');
     }
 
+    /** Courier success ratio of the customer's mobile (button next to "Mobile"); ?fresh=1 skips the 6-hour cache. */
+    public function courierRatio(Request $request, string $order, \App\Services\CourierRatioService $ratio)
+    {
+        $model = Order::findByUidOrFail($order);
+
+        return response()->json($ratio->check($model->mobile, $request->boolean('fresh')));
+    }
+
     public function markVerified(string $order)
     {
         $model = Order::findByUidOrFail($order);

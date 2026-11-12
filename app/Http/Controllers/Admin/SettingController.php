@@ -11,6 +11,7 @@ use App\Support\Seo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class SettingController extends Controller
 {
@@ -77,6 +78,9 @@ class SettingController extends Controller
             'logo' => upload_rules('logo'),
             'logo_light' => upload_rules('logo'),
             'favicon' => upload_rules('favicon'),
+            'favicon_ico' => 'nullable|file|max:512',
+            'courier_check_url' => 'nullable|url|max:255',
+            'courier_check_token' => 'nullable|string|max:4000',
             'og_image' => upload_rules('og_image'),
         ], [
             'phone.regex' => 'Enter a valid phone number.',
@@ -149,6 +153,44 @@ class SettingController extends Controller
             }
         }
 
+        // Favicon set for every device, made from the uploaded favicon: browser tabs (32, 48), Apple (180), Android (512).
+        $variants = ['favicon_32' => [32, 32], 'favicon_48' => [48, 48], 'favicon_180' => [180, 180], 'favicon_512' => [512, 512]];
+        if ($request->hasFile('favicon')) {
+            foreach ($variants as $key => $size) {
+                $this->images->delete($this->settings->get($key));
+                $values[$key] = $this->images->store($request->file('favicon'), 'settings', $size, 'cover', 'png');
+            }
+        } elseif ($request->boolean('remove_favicon')) {
+            foreach (array_keys($variants) as $key) {
+                $this->images->delete($this->settings->get($key));
+                $values[$key] = null;
+            }
+        }
+
+        // .ico favicon (uploaded as is — /favicon.ico and the "shortcut icon"). Checked to be a real ICO file.
+        if ($request->hasFile('favicon_ico')) {
+            $file = $request->file('favicon_ico');
+            $head = (string) file_get_contents($file->getRealPath(), false, null, 0, 4);
+            if (strtolower($file->getClientOriginalExtension()) !== 'ico' || $head !== "\x00\x00\x01\x00") {
+                throw ValidationException::withMessages(['favicon_ico' => 'Please choose a real .ico file (an icon made by an ICO converter).']);
+            }
+            $this->images->delete($this->settings->get('favicon_ico'));
+            $values['favicon_ico'] = $file->storeAs('settings', Str::random(20).'.ico', 'uploads');
+        } elseif ($request->boolean('remove_favicon_ico')) {
+            $this->images->delete($this->settings->get('favicon_ico'));
+            $values['favicon_ico'] = null;
+        }
+
+        // Courier check (Settings → Courier check): token stored encrypted; empty field keeps the saved one.
+        if ($request->has('courier_present')) {
+            $values['courier_check_url'] = trim((string) $request->input('courier_check_url')) ?: null;
+            if (filled($token = trim((string) $request->input('courier_check_token')))) {
+                $values['courier_check_token'] = Crypt::encryptString($token);
+            } elseif ($request->boolean('remove_courier_check_token')) {
+                $values['courier_check_token'] = null;
+            }
+        }
+
         $this->settings->save($values);
 
         return back()->with('success', 'Settings saved.')->withFragment($request->input('tab', ''));
@@ -175,6 +217,15 @@ class SettingController extends Controller
         $result = $sms->sendWithResult(preg_replace('/\s+/', '', $data['mobile']), $sms->otpMessage((string) random_int(100000, 999999)));
 
         return response()->json($result, $result['ok'] ? 200 : 422);
+    }
+
+    /** "Test" on the Courier check card: checks any number with the saved token (never cached). */
+    public function courierTest(Request $request, \App\Services\CourierRatioService $ratio)
+    {
+        $data = $request->validate(['mobile' => ['required', 'regex:/^01[3-9]\d{8}$/']], ['mobile.regex' => 'Enter an 11 digit mobile number, e.g. 01712345678.']);
+        $r = $ratio->check($data['mobile'], true);
+
+        return response()->json($r, $r['ok'] ? 200 : 422);
     }
 
     /** `<meta name="…" content="abc123" />` → "abc123"; a plain code is returned trimmed; empty → null. */

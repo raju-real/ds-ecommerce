@@ -162,7 +162,7 @@
                     @csrf
                     <div class="row g-3">
                         <div class="col-md-6"><label class="form-label">Name</label><input type="text" name="customer_name" class="form-control" value="{{ $order->customer_name }}" placeholder="Customer full name" required minlength="3" maxlength="120"></div>
-                        <div class="col-md-6"><label class="form-label">Mobile</label><input type="tel" name="mobile" class="form-control" value="{{ $order->mobile }}" placeholder="01XXXXXXXXX" required minlength="11" maxlength="11" pattern="01[3-9][0-9]{8}" data-digits data-msg-pattern="Enter a valid 11 digit mobile number (01XXXXXXXXX)."></div>
+                        <div class="col-md-6"><label class="form-label d-flex align-items-center gap-2">Mobile <button type="button" class="label-tool" data-bs-toggle="modal" data-bs-target="#courierRatioModal" title="Courier success ratio" data-bs-placement="top" aria-label="Check courier success ratio"><i class="bi bi-shield-check"></i></button></label><input type="tel" name="mobile" class="form-control" value="{{ $order->mobile }}" placeholder="01XXXXXXXXX" required minlength="11" maxlength="11" pattern="01[3-9][0-9]{8}" data-digits data-msg-pattern="Enter a valid 11 digit mobile number (01XXXXXXXXX)."></div>
                         <div class="col-12">
                             <label class="form-label">Address</label>
                             <input type="text" name="address" class="form-control" value="{{ $order->address }}" placeholder="House no, road, area, landmark" required minlength="10" maxlength="500">
@@ -246,4 +246,5 @@
     </div>
 
     @include('admin.orders.partials.whatsapp-invoice')
+    @include('admin.orders.partials.courier-ratio')
 @endsection

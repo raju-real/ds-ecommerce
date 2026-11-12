@@ -574,3 +574,12 @@ body:has(.note-editor.fullscreen) { overflow: hidden; }
 /* "Final Order Info" box around the customer fields (order page → Place order with vendor) */
 .po-final { border: 1px solid #cbd5e1; border-radius: 12px; padding: 1rem 1.1rem 1.15rem; background: #fff; }
 .po-final-title { font-weight: 700; font-size: .95rem; color: #0f172a; padding-bottom: .65rem; margin-bottom: .9rem; border-bottom: 1px solid #eef0f4; }
+
+/* Courier success ratio (order page modal + Settings → Courier check) */
+.cr-summary { font-weight: 700; font-size: .98rem; display: flex; flex-wrap: wrap; gap: .35rem .5rem; margin-bottom: .75rem; }
+.cr-summary .sep { color: #cbd5e1; font-weight: 400; }
+.cr-table th { font-size: .78rem; color: #64748b; font-weight: 600; text-align: center; }
+.cr-table th:first-child { text-align: left; }
+.cr-raw { background: #f8fafc; border-radius: 10px; padding: .75rem; font-size: .75rem; max-height: 320px; overflow: auto; }
+.label-tool { border: 0; background: #eef2ff; color: var(--brand); width: 26px; height: 22px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: .8rem; padding: 0; vertical-align: middle; }
+.label-tool:hover { background: var(--brand); color: #fff; }

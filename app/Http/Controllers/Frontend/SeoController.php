@@ -21,11 +21,37 @@ class SeoController extends Controller
      */
     public function favicon()
     {
-        $path = setting('favicon');
-        $file = $path ? rtrim((string) config('filesystems.disks.uploads.root', public_path('uploads')), '/\\').'/'.ltrim($path, '/') : null;
-        abort_unless($file && is_file($file), 404);
+        // The .ico from Settings when uploaded (real ICO file), else the PNG favicon.
+        $root = rtrim((string) config('filesystems.disks.uploads.root', public_path('uploads')), '/\\');
+        foreach ([['favicon_ico', 'image/x-icon'], ['favicon', 'image/png']] as [$key, $type]) {
+            $path = setting($key);
+            $file = $path ? $root.'/'.ltrim($path, '/') : null;
+            if ($file && is_file($file)) {
+                return response()->file($file, ['Content-Type' => $type, 'Cache-Control' => 'public, max-age=86400']);
+            }
+        }
+        abort(404);
+    }
 
-        return response()->file($file, ['Content-Type' => 'image/png', 'Cache-Control' => 'public, max-age=86400']);
+    /** /site.webmanifest — the shop's name and icons for "Add to home screen" / Android (192 and 512 px). */
+    public function manifest()
+    {
+        $fav = setting('favicon');
+        abort_unless($fav, 404);
+        $name = setting('site_name', config('app.name'));
+
+        return response()->json([
+            'name' => $name,
+            'short_name' => \Illuminate\Support\Str::limit($name, 12, ''),
+            'start_url' => '/',
+            'display' => 'browser',
+            'theme_color' => '#4f46e5',
+            'background_color' => '#ffffff',
+            'icons' => array_values(array_filter([
+                ['src' => img_url($fav), 'sizes' => '192x192', 'type' => 'image/png'],
+                setting('favicon_512') ? ['src' => img_url(setting('favicon_512')), 'sizes' => '512x512', 'type' => 'image/png'] : null,
+            ])),
+        ], 200, ['Content-Type' => 'application/manifest+json', 'Cache-Control' => 'public, max-age=86400'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
     public function robots()

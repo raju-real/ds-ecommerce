@@ -41,6 +41,7 @@
                             <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#seo"><i class="bi bi-search"></i> SEO & tracking</button>
                             <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#pixel"><i class="bi bi-facebook"></i> Facebook Pixel</button>
                             <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#sms"><i class="bi bi-chat-dots"></i> SMS / OTP</button>
+                            <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#courier"><i class="bi bi-truck"></i> Courier check</button>
                         </div>
                     </div>
                 </div>
@@ -100,6 +101,24 @@
                                         <div class="mt-2">@include('admin.partials.upload-hint', ['type' => $type, 'note' => $hint])</div>
                                     </div>
                                 @endforeach
+                                {{-- .ico favicon: served at /favicon.ico and as the "shortcut icon" (older browsers, Google, Windows) --}}
+                                <div class="col-md-6">
+                                    <label class="form-label" for="f-favicon_ico">Favicon (.ico format)</label>
+                                    <div class="d-flex align-items-center gap-3 mb-2 p-3 rounded-3 bg-light" style="min-height: 90px">
+                                        @if(!empty($s['favicon_ico']))
+                                            <img src="{{ img_url($s['favicon_ico']) }}" alt="" width="32" height="32">
+                                            <span class="small text-muted">Used at <a href="{{ url('/favicon.ico') }}" target="_blank" rel="noopener">{{ url('/favicon.ico') }}</a></span>
+                                        @else
+                                            <span class="small text-muted">No .ico uploaded — /favicon.ico shows the PNG favicon</span>
+                                        @endif
+                                    </div>
+                                    <input type="file" name="favicon_ico" id="f-favicon_ico" class="form-control @error('favicon_ico') is-invalid @enderror" accept=".ico,image/x-icon,image/vnd.microsoft.icon" data-no-validate>
+                                    @error('favicon_ico')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                                    @if(!empty($s['favicon_ico']))
+                                        <div class="form-check mt-2 mb-0"><input class="form-check-input" type="checkbox" name="remove_favicon_ico" value="1" id="rm-favicon_ico"><label class="form-check-label text-danger small" for="rm-favicon_ico">Remove current .ico</label></div>
+                                    @endif
+                                    <div class="form-text">Upload an <strong>.ico</strong> file (with 16, 32 and 48 px sizes inside). It is used as is for <code>/favicon.ico</code> and the shortcut icon. The PNG favicon above makes the other sizes (Apple, Android, Google).</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -213,6 +232,8 @@
                     @include('admin.settings.facebook')
 
                     @include('admin.settings.sms')
+
+                    @include('admin.settings.courier')
                 </div>
 
                 <div class="d-flex justify-content-end mt-4">

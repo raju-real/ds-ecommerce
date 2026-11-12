@@ -49,11 +49,22 @@
     <meta name="twitter:description" content="{{ \Illuminate\Support\Str::limit(strip_tags($metaDescription), 200) }}">
     @if($ogImage)<meta name="twitter:image" content="{{ $ogImage }}">@endif
 
-    {{-- Favicon (Settings → Branding), saved as a 192×192 PNG: Google shows it next to results only when its size is a
-         multiple of 48 px. /favicon.ico serves the same image (SeoController@favicon). --}}
-    @if(setting('favicon'))
-        <link rel="icon" type="image/png" sizes="192x192" href="{{ img_url(setting('favicon')) }}">
-        <link rel="apple-touch-icon" href="{{ img_url(setting('favicon')) }}">
+    {{-- Favicons for every device, all from Settings → Logo & branding:
+         .ico (if uploaded) for /favicon.ico + shortcut icon; PNG sizes made from the favicon upload: 32 / 48 (tabs, Google
+         needs a multiple of 48), 192 (Android, Google), 180 (Apple), 512 (installed web app, via /site.webmanifest).
+         Sizes saved before this change fall back to the main favicon. --}}
+    @php($fav = setting('favicon'))
+    @if($fav || setting('favicon_ico'))
+        @if(setting('favicon_ico'))
+            <link rel="icon" href="{{ url('/favicon.ico') }}" sizes="any">
+        @endif
+        @if($fav)
+            <link rel="icon" type="image/png" sizes="32x32" href="{{ img_url(setting('favicon_32') ?: $fav) }}">
+            <link rel="icon" type="image/png" sizes="48x48" href="{{ img_url(setting('favicon_48') ?: $fav) }}">
+            <link rel="icon" type="image/png" sizes="192x192" href="{{ img_url($fav) }}">
+            <link rel="apple-touch-icon" sizes="180x180" href="{{ img_url(setting('favicon_180') ?: $fav) }}">
+            <link rel="manifest" href="{{ url('/site.webmanifest') }}">
+        @endif
         <link rel="shortcut icon" href="{{ url('/favicon.ico') }}">
     @endif
 

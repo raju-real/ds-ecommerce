@@ -51,6 +51,7 @@ Route::get('/locations/{districtId}/thanas', [Frontend\LocationController::class
 Route::get('/sitemap.xml', [Frontend\SeoController::class, 'sitemap'])->name('sitemap');
 Route::get('/robots.txt', [Frontend\SeoController::class, 'robots']);
 Route::get('/favicon.ico', [Frontend\SeoController::class, 'favicon'])->name('favicon');
+Route::get('/site.webmanifest', [Frontend\SeoController::class, 'manifest'])->name('manifest');
 
 /*
 |--------------------------------------------------------------------------
@@ -96,6 +97,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('{order}/status', 'status')->name('status');
             Route::post('{order}/forward', 'forward')->name('forward');
             Route::post('{order}/details', 'details')->name('details');
+            Route::get('{order}/courier-ratio', 'courierRatio')->middleware('throttle:30,1')->name('courier-ratio');
             Route::post('{order}/verify', 'markVerified')->name('verify');
             Route::delete('{order}', 'destroy')->name('destroy');
         });
@@ -131,6 +133,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('cache/refresh', [Admin\CacheController::class, 'refresh'])->middleware('throttle:10,1')->name('cache.refresh');
         Route::post('settings', [Admin\SettingController::class, 'update'])->name('settings.update');
         Route::post('settings/facebook-test', [Admin\SettingController::class, 'facebookTest'])->middleware('throttle:10,1')->name('settings.facebook-test');
+        Route::post('settings/courier-test', [Admin\SettingController::class, 'courierTest'])->middleware('throttle:10,1')->name('settings.courier-test');
         Route::post('settings/sms-balance', [Admin\SettingController::class, 'smsBalance'])->middleware('throttle:20,1')->name('settings.sms-balance');
         Route::post('settings/sms-test', [Admin\SettingController::class, 'smsTest'])->middleware('throttle:5,1')->name('settings.sms-test');
         Route::get('profile', [Admin\ProfileController::class, 'edit'])->name('profile');
