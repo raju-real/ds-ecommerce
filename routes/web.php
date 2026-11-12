@@ -19,6 +19,7 @@ Route::get('/product/{slug}/quick-view', [Frontend\ProductController::class, 'qu
 Route::get('/brand/{slug}', [Frontend\ProductController::class, 'brand'])->name('brand.show');
 Route::get('/blog', [Frontend\BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{slug}', [Frontend\BlogController::class, 'show'])->name('blog.show');
+Route::get('/page/{slug}', [Frontend\PageController::class, 'show'])->name('page.show');
 Route::get('/search/suggest', [Frontend\SearchController::class, 'suggest'])->middleware('throttle:search')->name('search.suggest');
 
 // Shareable direct-order link (social posts): adds the product and opens checkout.
@@ -100,6 +101,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::post('sliders/sort', [Admin\SliderController::class, 'saveSort'])->name('sliders.sort');
         Route::resource('sliders', Admin\SliderController::class)->except('show');
+        Route::post('pages/sort', [Admin\PageController::class, 'saveSort'])->name('pages.sort');
+        Route::patch('pages/{page}/toggle', [Admin\PageController::class, 'toggle'])->name('pages.toggle');
+        Route::resource('pages', Admin\PageController::class)->except('show');
         Route::get('blogs/link-search', [Admin\BlogController::class, 'linkSearch'])->name('blogs.link-search');
         Route::resource('blogs', Admin\BlogController::class)->except('show');
         Route::resource('coupons', Admin\CouponController::class)->except('show');

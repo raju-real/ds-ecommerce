@@ -38,6 +38,7 @@ class EventServiceProvider extends ServiceProvider
         \App\Models\Thana::class => [CacheObserver::class],
         \App\Models\Slider::class => [CacheObserver::class],
         \App\Models\Blog::class => [CacheObserver::class],
+        \App\Models\Page::class => [CacheObserver::class],
         \App\Models\ShortLink::class => [CacheObserver::class],
         \App\Models\AdminNotification::class => [CacheObserver::class],
         \App\Models\Coupon::class => [CacheObserver::class],

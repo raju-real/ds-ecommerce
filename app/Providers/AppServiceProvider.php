@@ -60,6 +60,7 @@ class AppServiceProvider extends ServiceProvider
                 'menuCategories' => app(CategoryRepository::class)->menu(),
                 'menuBrands' => app(\App\Repositories\BrandRepository::class)->active(),
                 'hasBlog' => app(\App\Repositories\BlogRepository::class)->published()->isNotEmpty(),
+                'footerPages' => app(\App\Repositories\PageRepository::class)->active(), // Website → Pages, in the admin order
                 'cartCount' => app(CartService::class)->count(),
             ];
             $view->with($shared);

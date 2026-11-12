@@ -64,6 +64,7 @@
             @include('admin.partials.nav-group', ['id' => 'website', 'label' => 'Website', 'icon' => 'bi-window', 'items' => [
                 ['Blog', 'admin.blogs.index', ['admin.blogs.*']],
                 ['Sliders', 'admin.sliders.index', ['admin.sliders.*']],
+                ['Pages', 'admin.pages.index', ['admin.pages.*']],
             ]])
 
             <div class="nav-title"><span>Settings</span></div>

@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Repositories\BlogRepository;
 use App\Repositories\BrandRepository;
 use App\Repositories\CategoryRepository;
+use App\Repositories\PageRepository;
 use App\Repositories\ProductRepository;
 use Illuminate\Support\Carbon;
 
@@ -20,6 +21,7 @@ class Sitemap
         protected CategoryRepository $categories,
         protected BrandRepository $brands,
         protected BlogRepository $blogs,
+        protected PageRepository $pages,
     ) {
     }
 
@@ -37,6 +39,8 @@ class Sitemap
                 ['loc' => route('home'), 'lastmod' => $products->max('updated_at')],
                 ['loc' => route('products.index'), 'lastmod' => $products->max('updated_at')],
                 $blogs->isNotEmpty() ? ['loc' => route('blog.index'), 'lastmod' => $blogs->max('updated_at')] : null,
+                // Website → Pages (About us, policies …), with their banner image when set
+                ...$this->pages->active()->map(fn ($p) => ['loc' => $p->url, 'lastmod' => $p->updated_at, 'images' => $p->image ? [['loc' => $p->image_url, 'title' => $p->name]] : []])->all(),
             ])),
             'categories' => [],
             'brands' => $this->brands->active()->filter(fn ($b) => $b->products_count > 0)

@@ -1,7 +1,9 @@
 <footer class="site-footer">
     <div class="container py-5">
+        {{-- With pages (Admin → Website → Pages) the footer gets an "Information" column; widths make room for it. --}}
+        @php($hasPages = isset($footerPages) && $footerPages->isNotEmpty())
         <div class="row g-4">
-            <div class="col-lg-4">
+            <div class="{{ $hasPages ? 'col-lg-3' : 'col-lg-4' }}">
                 <a href="{{ route('home') }}" class="footer-logo d-inline-block mb-3">
                     @if(setting('logo_light'))
                         <img src="{{ img_url(setting('logo_light')) }}" alt="{{ $siteName }}" height="42" loading="lazy">
@@ -35,7 +37,17 @@
                     <li><a href="{{ route('checkout') }}">Checkout</a></li>
                 </ul>
             </div>
-            <div class="col-lg-4">
+            @if($hasPages)
+                <div class="col-6 col-lg-2">
+                    <h6>Information</h6>
+                    <ul class="list-unstyled links">
+                        @foreach($footerPages as $fp)
+                            <li><a href="{{ $fp->url }}">{{ $fp->name }}</a></li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+            <div class="{{ $hasPages ? 'col-lg-3' : 'col-lg-4' }}">
                 <h6>Contact Us</h6>
                 <ul class="list-unstyled links">
                     @if(setting('address'))<li class="d-flex gap-2"><i class="bi bi-geo-alt"></i><span>{{ setting('address') }}</span></li>@endif

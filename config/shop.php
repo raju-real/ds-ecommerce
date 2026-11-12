@@ -45,6 +45,7 @@ return [
         'logo' => [400, 120],
         'favicon' => [192, 192],    // Google shows favicons whose size is a multiple of 48 px (48, 96, 192 …)
         'blog' => ['large' => [1200, 630], 'thumb' => [600, 315]], // cover cropped to the social-share ratio
+        'page' => [1200, 630],                                     // optional page banner (Website → Pages), also the share image
         'editor' => [1200, 1600],
         'share' => [1200, 630],                                    // meta (share) image of products, categories, brands, blogs                                   // images inside blog/product text, scaled down only
     ],
@@ -66,12 +67,14 @@ return [
         'og_image' => 4096,
         'meta_image' => 4096,
         'blog' => 4096,
+        'page' => 4096,
         'editor' => 4096,
 
         // Smallest accepted image (width x height), enforced on both sides.
         'min' => [
             'thumbnail' => [400, 400],
             'blog' => [800, 420],
+            'page' => [600, 315],
             'slider' => [1200, 400],
             'meta_image' => [600, 315],
             'favicon' => [48, 48],
@@ -89,6 +92,7 @@ return [
             'og_image' => [1200, 630, '1.91:1'],
             'meta_image' => [1200, 630, '1.91:1 — shown when the link is shared on Facebook/WhatsApp'],
             'blog' => [1200, 630, '1.91:1 — also the Facebook/WhatsApp share image'],
+            'page' => [1200, 630, '1.91:1 banner — also the share image'],
             'editor' => [1200, 800, 'any shape; wider images are scaled to 1200 px'],
         ],
     ],

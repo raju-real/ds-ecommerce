@@ -53,13 +53,13 @@ class SeoController extends Controller
     public function slug(Request $request)
     {
         $data = $request->validate([
-            'type' => 'required|in:product,blog',
+            'type' => 'required|in:product,blog,page',
             'text' => 'required|string|max:250',
             'id' => 'nullable|integer|min:1',
         ], [
             'text.required' => 'Type or paste the text for the URL first.',
         ]);
-        $model = $data['type'] === 'product' ? \App\Models\Product::class : \App\Models\Blog::class;
+        $model = ['product' => \App\Models\Product::class, 'blog' => \App\Models\Blog::class, 'page' => \App\Models\Page::class][$data['type']];
         $max = $data['type'] === 'product' ? 200 : 180; // same limits as the forms
 
         $base = \Illuminate\Support\Str::slug(Seo::plain($data['text']) ?? '');

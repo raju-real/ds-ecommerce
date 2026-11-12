@@ -456,3 +456,6 @@ img { max-width: 100%; }
 .coupon-box .form-control[readonly] { background: #f0fdf4; border-color: #86efac; font-weight: 700; letter-spacing: .04em; }
 .coupon-msg:empty { display: none; }
 .coupon-row .btn-link { font-size: .78rem; }
+
+/* Pages from Admin → Website → Pages (/page/{slug}) — same typography as blog posts, a readable width */
+.cms-page { max-width: 900px; }

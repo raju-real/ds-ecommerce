@@ -394,7 +394,8 @@
         if (!box) return;
         const cfg = JSON.parse(box.dataset.seoPreview);
         const q = (s) => (s ? document.querySelector(s) : null);
-        const plain = (html) => { const d = document.createElement('div'); d.innerHTML = html || ''; return (d.textContent || '').replace(/\s+/g, ' ').trim(); };
+        // Same as the server summary (Blog::summarize): a space where a paragraph, heading, list item or line ends.
+        const plain = (html) => { const d = document.createElement('div'); d.innerHTML = (html || '').replace(/<(br|\/p|\/h\d|\/li|\/div)>/gi, ' $&'); return (d.textContent || '').replace(/\s+/g, ' ').trim(); };
         const ctx = document.createElement('canvas').getContext('2d');
         const TITLE_FONT = '20px Arial';
         const width = (s) => { ctx.font = TITLE_FONT; return ctx.measureText(s).width; };
@@ -413,17 +414,17 @@
         function render() {
             const name = (q(cfg.name)?.value || '').trim();
             const page = (q('#meta_title')?.value || '').trim() || name;
-            const title = (page || (cfg.type === 'blog' ? 'Post title' : 'Product name')) + ' | ' + cfg.siteName;
+            const title = (page || ({ blog: 'Post title', page: 'Page name' }[cfg.type] || 'Product name')) + ' | ' + cfg.siteName;
 
             let desc = (q('#meta_description')?.value || '').trim();
             let descFrom = 'meta description';
             if (!desc) {
-                for (const s of cfg.desc) { const el = q(s); const v = el ? fieldText(el) : ''; if (v) { desc = v; descFrom = el.name === 'short_description' ? 'short description' : (cfg.type === 'blog' ? 'post text' : 'description'); break; } }
+                for (const s of cfg.desc) { const el = q(s); const v = el ? fieldText(el) : ''; if (v) { desc = v; descFrom = el.name === 'short_description' ? 'short description' : ({ blog: 'post text', page: 'page content' }[cfg.type] || 'description'); break; } }
             }
             desc = cutChars(desc, 160);
 
             const slugEl = q('#slug');
-            const slug = (slugEl && slugEl.value.trim()) || slugify(name) || (cfg.type === 'blog' ? 'post-url' : 'product-url');
+            const slug = (slugEl && slugEl.value.trim()) || slugify(name) || (cfg.type + '-url');
             box.querySelector('[data-pv-url]').textContent = 'https://' + cfg.host + ' › ' + cfg.type + ' › ' + slug;
 
             box.querySelector('[data-pv-title]').textContent = cutWidth(title, 600);
