@@ -1,4 +1,4 @@
-{{-- "Send invoice on WhatsApp" (admin order page): a mini receipt like a shop slip, made into PNG or PDF in the browser
+{{-- "Send invoice on WhatsApp" (admin order page): a mini invoice in the shop design, made into PNG or PDF in the browser
      (html2canvas / jsPDF, loaded only when the window opens) and sent with a message.
      Sending: the share menu of the phone / WhatsApp app with the file and message; where that is not available, the file is
      downloaded (and a PNG copied), and the customer's WhatsApp chat opens with the message — paste (Ctrl+V) or attach the file.
@@ -9,6 +9,10 @@
     $waNumber = \App\Support\WhatsappInvoice::number($order->mobile);
     $fileBase = 'invoice-'.$order->order_number;
     $discount = (float) ($order->coupon_discount ?? 0) + (float) $order->discount;
+    $website = preg_replace('#^www\.#', '', (string) parse_url(url('/'), PHP_URL_HOST)); // e.g. neatlybd.com
+    $supportEmail = setting('email');
+    $supportPhone = setting('phone');
+    $districtName = optional($order->district)->name;
 @endphp
 
 <div class="modal fade" id="waInvoiceModal" tabindex="-1" aria-labelledby="waInvoiceTitle" aria-hidden="true">
@@ -23,39 +27,60 @@
                     {{-- The mini invoice (this exact block becomes the PNG / PDF) --}}
                     <div class="col-md-5 d-flex justify-content-center">
                         <div class="mini-invoice-wrap">
+                            {{-- Same look as the shop: Inter, brand indigo, rounded soft boxes --}}
                             <div class="mini-invoice" id="miniInvoice">
-                                <div class="mi-head">
+                                <div class="mi-top">
                                     @if(setting('logo'))
                                         <img src="{{ img_url(setting('logo')) }}" alt="{{ $siteName }}" class="mi-logo" crossorigin="anonymous">
                                     @else
                                         <div class="mi-brand">{{ $siteName }}</div>
                                     @endif
-                                    <div class="mi-name">{{ $siteName }}</div>
-                                    @if(setting('phone'))<div>Contact: {{ setting('phone') }}</div>@endif
-                                    <div class="mi-order">Order {{ $order->order_number }} · {{ $order->created_at->format('d M Y') }}</div>
+                                    <div class="mi-doc">
+                                        <span class="mi-badge">INVOICE</span>
+                                        <div class="mi-no">#{{ $order->order_number }}</div>
+                                        <div class="mi-date">{{ $order->created_at->format('d M Y') }}</div>
+                                    </div>
                                 </div>
-                                <div class="mi-dash"></div>
-                                <div class="mi-customer">
-                                    <div>Name: {{ $order->customer_name }}</div>
-                                    <div>Number: {{ $order->mobile }}</div>
-                                    <div>Address: {{ $order->full_address }}</div>
+
+                                <div class="mi-box">
+                                    <div class="mi-cap">Bill to</div>
+                                    <div class="mi-cust">{{ $order->customer_name }}</div>
+                                    <div class="mi-line">{{ $order->mobile }}</div>
+                                    <div class="mi-line">{{ $order->full_address }}</div>
                                 </div>
-                                <div class="mi-dash"></div>
-                                <table class="mi-table">
-                                    <thead><tr><th>Item</th><th>Qty</th><th>Price</th></tr></thead>
-                                    <tbody>
-                                        @foreach($order->items as $item)
-                                            <tr><td>{{ $item->product_name }}</td><td class="c">{{ $item->quantity }}</td><td class="r">{{ $plain($item->line_total) }}</td></tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                                <div class="mi-totals">
-                                    <div><span>Subtotal</span><span>{{ $plain($order->subtotal) }}</span></div>
-                                    <div><span>Delivery Charge</span><span>{{ $plain($order->delivery_charge) }}</span></div>
-                                    @if($discount > 0)<div><span>Discount</span><span>-{{ $plain($discount) }}</span></div>@endif
-                                    <div class="mi-grand"><span>Grand Total</span><span>Tk.{{ $plain($order->total) }}</span></div>
+
+                                <div class="mi-items">
+                                    <div class="mi-items-head"><span>Item</span><span>Amount</span></div>
+                                    @foreach($order->items as $item)
+                                        <div class="mi-item">
+                                            <div class="mi-item-main">
+                                                <div class="mi-item-name">{{ $item->product_name }}</div>
+                                                <div class="mi-item-sub">{{ $item->quantity }} × Tk {{ $plain($item->unit_price) }}</div>
+                                            </div>
+                                            <div class="mi-item-amt">Tk {{ $plain($item->line_total) }}</div>
+                                        </div>
+                                    @endforeach
                                 </div>
-                                <div class="mi-foot">Cash on delivery · Thank you for shopping with us</div>
+
+                                <div class="mi-sum">
+                                    <div><span>Subtotal</span><span>Tk {{ $plain($order->subtotal) }}</span></div>
+                                    <div><span>Delivery charge{{ $districtName ? ' ('.$districtName.')' : '' }}</span><span>Tk {{ $plain($order->delivery_charge) }}</span></div>
+                                    @if($discount > 0)<div class="mi-disc"><span>Discount</span><span>− Tk {{ $plain($discount) }}</span></div>@endif
+                                </div>
+                                <div class="mi-total">
+                                    <div>
+                                        <div class="mi-total-cap">Total payable</div>
+                                        <div class="mi-total-sub">Cash on delivery</div>
+                                    </div>
+                                    <div class="mi-total-amt">Tk {{ $plain($order->total) }}</div>
+                                </div>
+
+                                <div class="mi-thanks">Thank you for shopping with {{ $siteName }}!</div>
+                                <div class="mi-support">
+                                    @if($supportEmail)<div><span class="mi-k">Support</span>{{ $supportEmail }}</div>@endif
+                                    <div><span class="mi-k">Website</span>{{ $website }}</div>
+                                    @if($supportPhone)<div><span class="mi-k">Hotline</span>{{ $supportPhone }}</div>@endif
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -101,27 +126,38 @@
 
 @push('styles')
     <style>
-        /* Mini invoice: a shop slip, ~300 px wide; made 3× sharper as PNG / PDF */
-        .mini-invoice-wrap { background: #f1f5f9; border-radius: 12px; padding: 14px; }
-        .mini-invoice { width: 300px; background: #fff; color: #111; font-family: Arial, Helvetica, sans-serif; font-size: 13px; line-height: 1.4; padding: 18px 16px 14px; }
-        .mini-invoice .mi-head { text-align: center; }
-        .mini-invoice .mi-logo { max-width: 170px; max-height: 64px; object-fit: contain; display: block; margin: 0 auto 6px; }
-        .mini-invoice .mi-brand { font-size: 30px; font-weight: 800; color: #f26b21; letter-spacing: -.5px; margin-bottom: 4px; }
-        .mini-invoice .mi-name { font-weight: 600; }
-        .mini-invoice .mi-order { font-size: 11px; color: #555; margin-top: 2px; }
-        .mini-invoice .mi-dash { border-top: 1.5px dashed #333; margin: 10px 0; }
-        .mini-invoice .mi-customer div { overflow-wrap: anywhere; }
-        .mini-invoice .mi-table { width: 100%; border-collapse: collapse; margin: 4px 0 6px; }
-        .mini-invoice .mi-table th, .mini-invoice .mi-table td { border: 1px solid #333; padding: 4px 6px; vertical-align: top; }
-        .mini-invoice .mi-table th { text-align: center; font-weight: 700; }
-        .mini-invoice .mi-table td { border-top: 0; border-bottom: 0; }
-        .mini-invoice .mi-table tbody tr:last-child td { border-bottom: 1px solid #333; }
-        .mini-invoice .mi-table .c { text-align: center; white-space: nowrap; }
-        .mini-invoice .mi-table .r { text-align: right; white-space: nowrap; }
-        .mini-invoice .mi-totals { border-top: 1px solid #333; padding-top: 4px; }
-        .mini-invoice .mi-totals div { display: flex; justify-content: space-between; padding: 2px 4px; }
-        .mini-invoice .mi-grand { border-top: 1px solid #333; margin-top: 4px; padding-top: 6px !important; font-weight: 700; font-size: 14px; }
-        .mini-invoice .mi-foot { text-align: center; font-size: 10.5px; color: #666; margin-top: 10px; }
+        /* Mini invoice in the shop's design (Inter, brand indigo #4f46e5, rounded soft boxes), ~320 px wide; saved 3× sharper */
+        .mini-invoice-wrap { background: #eef2ff; border-radius: 14px; padding: 14px; }
+        .mini-invoice { width: 320px; background: #fff; color: #0f172a; font-family: "Inter", "Segoe UI", Arial, sans-serif; font-size: 12.5px; line-height: 1.45; border-radius: 16px; overflow: hidden; border-top: 6px solid #4f46e5; padding: 16px 16px 14px; }
+        .mini-invoice .mi-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid #eef0f4; }
+        .mini-invoice .mi-logo { max-width: 140px; max-height: 46px; object-fit: contain; display: block; }
+        .mini-invoice .mi-brand { font-size: 20px; font-weight: 800; color: #4f46e5; letter-spacing: -.02em; }
+        .mini-invoice .mi-doc { text-align: right; flex: 0 0 auto; }
+        .mini-invoice .mi-badge { display: inline-block; background: #eef2ff; color: #4f46e5; font-weight: 700; font-size: 9.5px; letter-spacing: .12em; padding: 3px 8px; border-radius: 999px; }
+        .mini-invoice .mi-no { font-weight: 700; font-size: 13px; margin-top: 4px; }
+        .mini-invoice .mi-date { color: #64748b; font-size: 11px; }
+        .mini-invoice .mi-box { background: #f8fafc; border-radius: 12px; padding: 10px 12px; margin: 12px 0; }
+        .mini-invoice .mi-cap { font-size: 9.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #94a3b8; margin-bottom: 2px; }
+        .mini-invoice .mi-cust { font-weight: 700; font-size: 13.5px; }
+        .mini-invoice .mi-line { color: #475569; overflow-wrap: anywhere; }
+        .mini-invoice .mi-items-head { display: flex; justify-content: space-between; font-size: 9.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #94a3b8; padding: 0 2px 6px; border-bottom: 1px solid #eef0f4; }
+        .mini-invoice .mi-item { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; padding: 8px 2px; border-bottom: 1px dashed #e2e8f0; }
+        .mini-invoice .mi-item-main { min-width: 0; }
+        .mini-invoice .mi-item-name { font-weight: 600; overflow-wrap: anywhere; }
+        .mini-invoice .mi-item-sub { color: #64748b; font-size: 11.5px; }
+        .mini-invoice .mi-item-amt { font-weight: 600; white-space: nowrap; }
+        .mini-invoice .mi-sum { padding: 8px 2px 0; }
+        .mini-invoice .mi-sum div { display: flex; justify-content: space-between; gap: 10px; color: #475569; padding: 2px 0; }
+        .mini-invoice .mi-sum span:last-child { color: #0f172a; white-space: nowrap; }
+        .mini-invoice .mi-sum .mi-disc span:last-child { color: #16a34a; }
+        .mini-invoice .mi-total { display: flex; justify-content: space-between; align-items: center; gap: 10px; background: #4f46e5; color: #fff; border-radius: 12px; padding: 10px 12px; margin-top: 10px; }
+        .mini-invoice .mi-total-cap { font-weight: 700; font-size: 13px; }
+        .mini-invoice .mi-total-sub { font-size: 10.5px; opacity: .85; }
+        .mini-invoice .mi-total-amt { font-weight: 800; font-size: 18px; white-space: nowrap; }
+        .mini-invoice .mi-thanks { text-align: center; font-weight: 600; color: #4f46e5; margin: 12px 0 8px; }
+        .mini-invoice .mi-support { border-top: 1px solid #eef0f4; padding-top: 8px; font-size: 11px; color: #475569; }
+        .mini-invoice .mi-support div { display: flex; gap: 8px; padding: 1px 0; overflow-wrap: anywhere; }
+        .mini-invoice .mi-k { flex: 0 0 52px; color: #94a3b8; font-weight: 600; }
     </style>
 @endpush
 
@@ -150,6 +186,7 @@
             async function make(fmt) {
                 if (files[fmt]) return files[fmt];
                 await libs();
+                if (document.fonts && document.fonts.ready) await document.fonts.ready; // Inter, like the shop
                 const canvas = await html2canvas(document.getElementById('miniInvoice'), { scale: 3, backgroundColor: '#ffffff', useCORS: true, logging: false });
                 let blob;
                 if (fmt === 'png') {
