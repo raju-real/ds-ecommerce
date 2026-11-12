@@ -43,7 +43,7 @@
                                 </div>
 
                                 <div class="mi-box">
-                                    <div class="mi-cap">Bill to</div>
+                                    <div class="mi-cap">Invoice to</div>
                                     <div class="mi-cust">{{ $order->customer_name }}</div>
                                     <div class="mi-line">{{ $order->mobile }}</div>
                                     <div class="mi-line">{{ $order->full_address }}</div>
@@ -127,8 +127,8 @@
 @push('styles')
     <style>
         /* Mini invoice in the shop's design (Inter, brand indigo #4f46e5, rounded soft boxes), ~320 px wide; saved 3× sharper */
-        .mini-invoice-wrap { background: #eef2ff; border-radius: 14px; padding: 14px; }
-        .mini-invoice { width: 320px; background: #fff; color: #0f172a; font-family: "Inter", "Segoe UI", Arial, sans-serif; font-size: 12.5px; line-height: 1.45; border-radius: 16px; overflow: hidden; border-top: 6px solid #4f46e5; padding: 16px 16px 14px; }
+        /* .mini-invoice-wrap { background: #eef2ff; border-radius: 14px; padding: 14px; } */
+        .mini-invoice { width: 320px; background: #fff; color: #0f172a; font-family: "Inter", "Segoe UI", Arial, sans-serif; font-size: 12.5px; line-height: 1.45; border-radius: 16px; overflow: hidden; padding: 16px 16px 14px; }
         .mini-invoice .mi-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid #eef0f4; }
         .mini-invoice .mi-logo { max-width: 140px; max-height: 46px; object-fit: contain; display: block; }
         .mini-invoice .mi-brand { font-size: 20px; font-weight: 800; color: #4f46e5; letter-spacing: -.02em; }
