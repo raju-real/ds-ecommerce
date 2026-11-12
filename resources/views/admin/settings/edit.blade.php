@@ -135,6 +135,13 @@
                                         <input type="url" name="{{ $key }}" id="{{ $key }}" class="form-control" value="{{ $v($key) }}" placeholder="{{ $ph }}" maxlength="255">
                                     </div>
                                 @endforeach
+                                <div class="col-12"><hr class="my-1"></div>
+                                <div class="col-12">
+                                    <label class="form-label" for="whatsapp_invoice_message"><i class="bi bi-whatsapp me-1 text-success"></i>WhatsApp invoice message</label>
+                                    <textarea name="whatsapp_invoice_message" id="whatsapp_invoice_message" rows="2" class="form-control" maxlength="1000" data-counter
+                                              placeholder="{{ \App\Support\WhatsappInvoice::DEFAULT_MESSAGE }}">{{ $v('whatsapp_invoice_message') }}</textarea>
+                                    <div class="form-text">Sent with the mini invoice from an order (Orders → order → <em>Send invoice</em>); it can be changed before each send. You can use <code>{name}</code> <code>{order}</code> <code>{total}</code>. Empty = the text shown.</div>
+                                </div>
                             </div>
                         </div>
                     </div>

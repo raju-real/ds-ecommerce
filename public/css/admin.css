@@ -551,3 +551,23 @@ body:has(.note-editor.fullscreen) { overflow: hidden; }
 .seo-meter.warn { background: #fef3c7; color: #b45309; }
 .seo-meter.bad { background: #fee2e2; color: #dc2626; }
 @media (max-width: 575px) { .serp-thumb { flex-basis: 64px; width: 64px; height: 64px; } .serp-title { font-size: 18px; } }
+
+/* Order page: "Place order with vendor" — values laid out like the vendor's checkout form, each with a copy button */
+.place-order .po-table th { white-space: nowrap; }
+.place-order .copy-val { display: inline-flex; align-items: center; gap: .25rem; }
+.place-order .copy-btn { border: 0; background: transparent; color: #94a3b8; padding: 0 .2rem; line-height: 1; font-size: .85rem; border-radius: 6px; }
+.place-order .copy-btn:hover, .place-order .copy-btn:focus-visible { color: var(--brand); background: #eef2ff; }
+.po-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .5rem; }
+.po-summary > div { background: #f8fafc; border-radius: 10px; padding: .55rem .75rem; display: flex; flex-direction: column; gap: .1rem; }
+.po-summary span { font-size: .78rem; color: #64748b; }
+.po-summary strong { font-size: 1rem; }
+.po-summary .po-profit { background: #f0fdf4; }
+.po-summary .po-cod { background: #eef2ff; }
+.po-summary .po-cod strong { color: var(--brand); font-size: 1.15rem; }
+.po-label { font-size: .82rem; font-weight: 600; color: #334155; margin-bottom: .3rem; }
+.po-field { display: flex; align-items: center; gap: .5rem; min-height: 42px; border: 1px solid #dfe3ea; border-radius: 10px; padding: .45rem .5rem .45rem .85rem; background: #fff; }
+.po-field .po-text { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; font-size: .9rem; }
+.po-field.strong .po-text { font-weight: 700; font-size: 1rem; }
+.po-field.empty .po-text { color: #94a3b8; }
+.po-field .copy-btn { flex: 0 0 auto; width: 32px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #e2e8f0; border-radius: 8px; color: #64748b; background: #fff; font-size: .9rem; }
+.po-field .copy-btn:hover { color: var(--brand); border-color: #c7d2fe; background: #eef2ff; }

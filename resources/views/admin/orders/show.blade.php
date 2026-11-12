@@ -22,6 +22,7 @@
         </div>
         <div class="d-flex gap-2 flex-wrap">
             <a href="{{ route('admin.orders.invoice', $order->unique_id) }}" target="_blank" class="btn btn-soft-secondary"><i class="bi bi-printer me-1"></i> Invoice</a>
+            <button type="button" class="btn btn-soft-success" data-bs-toggle="modal" data-bs-target="#waInvoiceModal"><i class="bi bi-whatsapp me-1"></i> Send invoice</button>
             @include('admin.partials.delete', ['action' => route('admin.orders.destroy', $order->unique_id), 'message' => 'This order will be deleted and removed from all lists.'])
         </div>
     </div>
@@ -99,8 +100,11 @@
                 </div>
             </div>
 
+            {{-- Everything to fill the vendor's checkout form, each value with a copy button --}}
+            @include('admin.orders.partials.place-order')
+
             {{-- Forward --}}
-            <div class="card mb-4">
+            <div class="card mb-4" id="forward">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5><i class="bi bi-send me-1"></i> Forward to vendor / courier</h5>
                     @if($order->forwarded_at)<span class="small text-muted">Forwarded {{ $order->forwarded_at->diffForHumans() }}</span>@endif
@@ -203,6 +207,7 @@
                         <a href="tel:{{ $order->mobile }}" class="btn btn-soft-primary btn-sm flex-fill"><i class="bi bi-telephone me-1"></i>Call</a>
                         <a href="https://wa.me/{{ $wa }}" target="_blank" rel="noopener" class="btn btn-soft-success btn-sm flex-fill"><i class="bi bi-whatsapp me-1"></i>WhatsApp</a>
                     </div>
+                    <button type="button" class="btn btn-success btn-sm w-100 mt-2" data-bs-toggle="modal" data-bs-target="#waInvoiceModal"><i class="bi bi-receipt me-1"></i>Send invoice on WhatsApp</button>
                     <hr>
                     <dl class="kv small mb-0" style="grid-template-columns: 100px 1fr">
                         <dt>Payment</dt><dd>Cash on delivery</dd>
@@ -232,4 +237,6 @@
             </div>
         </div>
     </div>
+
+    @include('admin.orders.partials.whatsapp-invoice')
 @endsection

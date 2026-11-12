@@ -17,7 +17,7 @@ class SettingController extends Controller
     /** Text settings editable from the form, grouped by tab. */
     public const FIELDS = [
         'general' => ['site_name', 'tagline', 'topbar_text', 'footer_about', 'copyright_text', 'default_delivery_charge'],
-        'contact' => ['phone', 'whatsapp', 'email', 'address', 'map_embed_url', 'facebook', 'instagram', 'youtube', 'tiktok', 'messenger'],
+        'contact' => ['phone', 'whatsapp', 'email', 'address', 'map_embed_url', 'facebook', 'instagram', 'youtube', 'tiktok', 'messenger', 'whatsapp_invoice_message'],
         'seo' => ['meta_title', 'meta_description', 'meta_keywords', 'google_analytics_id', 'google_site_verification'],
         // The access token is handled separately (stored encrypted, kept when the field is left empty).
         'facebook' => ['facebook_pixel_id', 'facebook_capi_enabled', 'facebook_test_event_code', 'facebook_domain_verification'],
@@ -56,6 +56,7 @@ class SettingController extends Controller
             'map_embed_url' => 'nullable|url|max:1000',
             'facebook' => 'nullable|url|max:255', 'instagram' => 'nullable|url|max:255', 'youtube' => 'nullable|url|max:255',
             'tiktok' => 'nullable|url|max:255', 'messenger' => 'nullable|url|max:255',
+            'whatsapp_invoice_message' => 'nullable|string|max:1000',
             'meta_title' => 'nullable|string|max:70',
             'meta_description' => 'nullable|string|max:160',
             'meta_keywords' => 'nullable|array|max:'.Seo::MAX_KEYWORDS,
