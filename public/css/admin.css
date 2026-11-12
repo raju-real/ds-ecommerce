@@ -571,3 +571,6 @@ body:has(.note-editor.fullscreen) { overflow: hidden; }
 .po-field.empty .po-text { color: #94a3b8; }
 .po-field .copy-btn { flex: 0 0 auto; width: 32px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #e2e8f0; border-radius: 8px; color: #64748b; background: #fff; font-size: .9rem; }
 .po-field .copy-btn:hover { color: var(--brand); border-color: #c7d2fe; background: #eef2ff; }
+/* "Final Order Info" box around the customer fields (order page → Place order with vendor) */
+.po-final { border: 1px solid #cbd5e1; border-radius: 12px; padding: 1rem 1.1rem 1.15rem; background: #fff; }
+.po-final-title { font-weight: 700; font-size: .95rem; color: #0f172a; padding-bottom: .65rem; margin-bottom: .9rem; border-bottom: 1px solid #eef0f4; }

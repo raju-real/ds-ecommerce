@@ -72,17 +72,20 @@
             <div class="po-cod"><span>Total price (COD)</span><strong>{{ money($order->total) }}</strong></div>
         </div>
 
-        {{-- Customer — same order as the vendor's checkout form --}}
+        {{-- Customer — same order as the vendor's checkout form, in a bordered box --}}
+        <div class="po-final">
+        <div class="po-final-title"><i class="bi bi-person-vcard me-1 text-primary"></i> Final Order Info</div>
         <div class="row g-3 po-fields">
-            <div class="col-md-8">@include('admin.orders.partials.copy-field', ['label' => 'Full name', 'value' => $order->customer_name])</div>
-            <div class="col-md-4">@include('admin.orders.partials.copy-field', ['label' => 'Phone number', 'value' => $order->mobile])</div>
+            <div class="col-md-6">@include('admin.orders.partials.copy-field', ['label' => 'Full name', 'value' => $order->customer_name])</div>
+            <div class="col-md-6">@include('admin.orders.partials.copy-field', ['label' => 'Phone number', 'value' => $order->mobile])</div>
             <div class="col-md-6">@include('admin.orders.partials.copy-field', ['label' => 'Delivery location', 'value' => $location, 'hint' => 'from the district'])</div>
             <div class="col-md-6">@include('admin.orders.partials.copy-field', ['label' => 'District', 'value' => $districtName])</div>
             <div class="col-md-6">@include('admin.orders.partials.copy-field', ['label' => 'Street address', 'value' => $order->address])</div>
             <div class="col-md-6">@include('admin.orders.partials.copy-field', ['label' => 'City / Thana', 'value' => $thanaName])</div>
             <div class="col-md-4">@include('admin.orders.partials.copy-field', ['label' => 'Transaction', 'value' => 'COD'])</div>
             <div class="col-md-4">@include('admin.orders.partials.copy-field', ['label' => 'Cash on delivery (COD)', 'value' => $cod, 'show' => money($order->total), 'strong' => true])</div>
-            <div class="col-md-4">@include('admin.orders.partials.copy-field', ['label' => 'Note / remarks', 'value' => $noteForVendor, 'hint' => $noteForVendor === '' ? 'customer left no note' : null])</div>
+            <div class="col-md-4">@include('admin.orders.partials.copy-field', ['label' => 'Note / remarks', 'value' => $noteForVendor])</div>
+        </div>
         </div>
         <div class="small text-muted mt-3"><i class="bi bi-info-circle me-1"></i>Click <i class="bi bi-copy"></i> to copy a value, or <strong>Copy all</strong> for everything at once. After placing it, save the vendor's order ID below under <a href="#forward">Forward to vendor / courier</a>.</div>
     </div>

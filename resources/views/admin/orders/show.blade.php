@@ -139,7 +139,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Courier cost (paid by you)</label>
-                                <div class="input-group"><span class="input-group-text">৳</span><input type="number" step="0.01" min="0" max="99999" name="courier_cost" class="form-control" value="{{ $order->courier_cost }}" placeholder="e.g. 60"></div>
+                                <div class="input-group"><span class="input-group-text">৳</span><input type="number" step="0.01" min="0" max="99999" name="courier_cost" class="form-control" value="{{ $order->courier_cost ?? $order->delivery_charge }}" placeholder="e.g. 60"></div>
                             </div>
                             <div class="col-12">
                                 <label class="form-label">Note</label>
