@@ -18,6 +18,20 @@ class OrderRepository
         return $has ??= \Illuminate\Support\Facades\Schema::hasColumn('orders', 'vat_amount');
     }
 
+    /**
+     * Profit columns (SQL). Net profit counts DELIVERED orders only — money is only earned once the customer has paid.
+     * expected_profit = the same for orders still on the way; delivered / delivered_revenue for the margin.
+     */
+    protected static function profitColumns(): string
+    {
+        $p = 'total - cost_total - '.self::extraCosts();
+
+        return "COALESCE(SUM(CASE WHEN status = 'delivered' THEN $p ELSE 0 END),0) as profit,
+            COALESCE(SUM(CASE WHEN status = 'delivered' THEN 0 ELSE $p END),0) as expected_profit,
+            COALESCE(SUM(status = 'delivered'),0) as delivered,
+            COALESCE(SUM(CASE WHEN status = 'delivered' THEN total ELSE 0 END),0) as delivered_revenue";
+    }
+
     /** Costs deducted from profit besides the vendor cost: courier cost and VAT we pay (SQL). */
     protected static function extraCosts(): string
     {
@@ -72,19 +86,20 @@ class OrderRepository
     /** Dashboard KPIs, last-14-day chart and recent orders. */
     public function dashboard(): array
     {
-        return ModelCache::remember([ModelCache::ORDERS, ModelCache::LOCATIONS], 'dashboard:'.now()->toDateString(), function () {
+        // v2: net profit counts delivered orders only (expected profit = orders still on the way).
+        return ModelCache::remember([ModelCache::ORDERS, ModelCache::LOCATIONS], 'dashboard:v2:'.now()->toDateString(), function () {
             $today = now()->startOfDay();
             $month = now()->startOfMonth();
             $valid = fn ($q) => $q->whereNotIn('status', ['cancelled', 'returned']);
 
             // toBase(): plain rows, so the "profit" alias isn't shadowed by Order::getProfitAttribute().
             $sum = fn (Carbon $from) => (array) Order::query()->where('created_at', '>=', $from)->tap($valid)
-                ->selectRaw('COUNT(*) as orders, COALESCE(SUM(total),0) as revenue, COALESCE(SUM(total - cost_total - '.self::extraCosts().'),0) as profit')
+                ->selectRaw('COUNT(*) as orders, COALESCE(SUM(total),0) as revenue, '.self::profitColumns())
                 ->toBase()->first();
 
             $days = collect(range(13, 0))->map(fn ($i) => now()->subDays($i)->toDateString());
             $daily = Order::query()->where('created_at', '>=', now()->subDays(13)->startOfDay())->tap($valid)
-                ->selectRaw('DATE(created_at) as d, COUNT(*) as orders, SUM(total) as revenue, SUM(total - cost_total - '.self::extraCosts().') as profit')
+                ->selectRaw('DATE(created_at) as d, COUNT(*) as orders, SUM(total) as revenue, '.self::profitColumns())
                 ->groupBy('d')->toBase()->get()->keyBy('d');
 
             return [
@@ -100,7 +115,8 @@ class OrderRepository
                 'recent' => Order::with('district:id,name')->latest('id')->take(8)->get(),
                 'top_products' => OrderItem::query()
                     ->whereHas('order', $valid)
-                    ->selectRaw('product_id, product_name, SUM(quantity) as qty, SUM(line_total - line_cost) as profit')
+                    ->selectRaw("product_id, product_name, SUM(quantity) as qty,
+                        SUM(CASE WHEN (SELECT o.status FROM orders o WHERE o.id = order_items.order_id) = 'delivered' THEN line_total - line_cost ELSE 0 END) as profit") // delivered only
                     ->groupBy('product_id', 'product_name')->orderByDesc('qty')->take(5)->get(),
             ];
         });
@@ -109,7 +125,8 @@ class OrderRepository
     /** Profit report for a date range, with per-vendor breakdown. */
     public function report(string $from, string $to): array
     {
-        return ModelCache::remember(ModelCache::ORDERS, "report:$from:$to", function () use ($from, $to) {
+        // v2: net profit counts delivered orders only.
+        return ModelCache::remember(ModelCache::ORDERS, "report:v2:$from:$to", function () use ($from, $to) {
             $range = [Carbon::parse($from)->startOfDay(), Carbon::parse($to)->endOfDay()];
             $valid = fn ($q) => $q->whereBetween('created_at', $range)->whereNotIn('status', ['cancelled', 'returned']);
 
@@ -117,7 +134,7 @@ class OrderRepository
                 'COUNT(*) as orders, COALESCE(SUM(subtotal),0) as subtotal, COALESCE(SUM(delivery_charge),0) as delivery,
                  COALESCE(SUM(total),0) as revenue, COALESCE(SUM(cost_total),0) as cost, COALESCE(SUM(courier_cost),0) as courier,
                  '.(self::hasVat() ? 'COALESCE(SUM(vat_amount),0)' : '0').' as vat,
-                 COALESCE(SUM(total - cost_total - '.self::extraCosts().'),0) as profit'
+                 '.self::profitColumns().''
             )->toBase()->first();
 
             $vendors = DB::table('order_items')
@@ -126,7 +143,9 @@ class OrderRepository
                 ->leftJoin('vendors', 'vendors.id', '=', 'order_items.vendor_id')
                 ->whereBetween('orders.created_at', $range)->whereNotIn('orders.status', ['cancelled', 'returned'])
                 ->selectRaw("COALESCE(vendors.name, 'No vendor') as vendor, COUNT(DISTINCT orders.id) as orders, SUM(order_items.quantity) as qty,
-                    SUM(order_items.line_total) as sales, SUM(order_items.line_cost) as cost, SUM(order_items.line_total - order_items.line_cost) as profit")
+                    SUM(order_items.line_total) as sales, SUM(order_items.line_cost) as cost,
+                    SUM(CASE WHEN orders.status = 'delivered' THEN order_items.line_total - order_items.line_cost ELSE 0 END) as profit,
+                    SUM(CASE WHEN orders.status = 'delivered' THEN 0 ELSE order_items.line_total - order_items.line_cost END) as expected_profit")
                 ->groupBy('vendors.name')->orderByDesc('profit')->get();
 
             $statuses = Order::query()->whereBetween('created_at', $range)

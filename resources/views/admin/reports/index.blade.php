@@ -38,7 +38,7 @@
         <div class="col-6 col-xl-3"><div class="card stat-card"><span class="icon bg-soft-primary"><i class="bi bi-receipt"></i></span><div><div class="label">Orders (excl. cancelled)</div><div class="value">{{ number_format($s['orders']) }}</div></div></div></div>
         <div class="col-6 col-xl-3"><div class="card stat-card"><span class="icon bg-soft-info"><i class="bi bi-currency-exchange"></i></span><div><div class="label">Revenue</div><div class="value">{{ money($s['revenue']) }}</div><div class="sub">incl. {{ money($s['delivery']) }} delivery</div></div></div></div>
         <div class="col-6 col-xl-3"><div class="card stat-card"><span class="icon bg-soft-warning"><i class="bi bi-shop"></i></span><div><div class="label">Vendor + courier + VAT</div><div class="value">{{ money($s['cost'] + $s['courier'] + ($s['vat'] ?? 0)) }}</div><div class="sub">{{ money($s['cost']) }} + {{ money($s['courier']) }} + {{ money($s['vat'] ?? 0) }} VAT</div></div></div></div>
-        <div class="col-6 col-xl-3"><div class="card stat-card"><span class="icon bg-soft-success"><i class="bi bi-graph-up-arrow"></i></span><div><div class="label">Net profit</div><div class="value text-success">{{ money($s['profit']) }}</div><div class="sub">{{ $s['revenue'] > 0 ? round($s['profit'] / $s['revenue'] * 100, 1) : 0 }}% margin</div></div></div></div>
+        <div class="col-6 col-xl-3"><div class="card stat-card"><span class="icon bg-soft-success"><i class="bi bi-graph-up-arrow"></i></span><div><div class="label">Net profit <span class="text-muted fw-normal">(delivered)</span></div><div class="value text-success">{{ money($s['profit']) }}</div><div class="sub" title="Only delivered orders count as profit">{{ number_format($s['delivered'] ?? 0) }} delivered · {{ ($s['delivered_revenue'] ?? 0) > 0 ? round($s['profit'] / $s['delivered_revenue'] * 100, 1) : 0 }}% margin<br>{{ money($s['expected_profit'] ?? 0) }} expected from orders on the way</div></div></div></div>
     </div>
 
     <div class="row g-4">
@@ -47,7 +47,7 @@
                 <div class="card-header"><h5>Profit by vendor</h5></div>
                 <div class="table-responsive">
                     <table class="table table-hover">
-                        <thead><tr><th>Vendor</th><th class="text-center">Orders</th><th class="text-center">Units</th><th class="text-end">Sales</th><th class="text-end">Cost</th><th class="text-end">Product profit</th></tr></thead>
+                        <thead><tr><th>Vendor</th><th class="text-center">Orders</th><th class="text-center">Units</th><th class="text-end">Sales</th><th class="text-end">Cost</th><th class="text-end">Profit <span class="fw-normal text-muted">(delivered)</span></th><th class="text-end">Expected</th></tr></thead>
                         <tbody>
                             @forelse($report['vendors'] as $row)
                                 <tr>
@@ -57,9 +57,10 @@
                                     <td class="text-end">{{ money($row->sales) }}</td>
                                     <td class="text-end text-muted">{{ money($row->cost) }}</td>
                                     <td class="text-end fw-bold text-success">{{ money($row->profit) }}</td>
+                                    <td class="text-end text-muted" title="Becomes profit when these orders are delivered">{{ money($row->expected_profit ?? 0) }}</td>
                                 </tr>
                             @empty
-                                <tr><td colspan="6"><div class="empty"><i class="bi bi-bar-chart"></i>No sales in this period</div></td></tr>
+                                <tr><td colspan="7"><div class="empty"><i class="bi bi-bar-chart"></i>No sales in this period</div></td></tr>
                             @endforelse
                         </tbody>
                     </table>

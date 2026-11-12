@@ -29,9 +29,9 @@
             <div class="card stat-card">
                 <span class="icon bg-soft-success"><i class="bi bi-cash-stack"></i></span>
                 <div>
-                    <div class="label">Today's profit</div>
+                    <div class="label">Today's net profit</div>
                     <div class="value text-success">{{ money($data['today']['profit']) }}</div>
-                    <div class="sub">After vendor & courier cost</div>
+                    <div class="sub" title="Net profit counts delivered orders only (after vendor, courier and VAT cost)">Delivered orders · {{ money($data['today']['expected_profit'] ?? 0) }} expected</div>
                 </div>
             </div>
         </div>
@@ -41,7 +41,7 @@
                 <div>
                     <div class="label">This month</div>
                     <div class="value">{{ money($data['month']['revenue']) }}</div>
-                    <div class="sub">{{ number_format($data['month']['orders']) }} orders · profit {{ money($data['month']['profit']) }}</div>
+                    <div class="sub">{{ number_format($data['month']['orders']) }} orders · net profit {{ money($data['month']['profit']) }} <span class="text-muted" title="Delivered orders only">({{ number_format($data['month']['delivered'] ?? 0) }} delivered)</span></div>
                 </div>
             </div>
         </div>
@@ -62,7 +62,7 @@
             <div class="card h-100">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5>Last 14 days</h5>
-                    <span class="small text-muted">Revenue vs profit</span>
+                    <span class="small text-muted">Revenue vs net profit (delivered)</span>
                 </div>
                 <div class="card-body"><canvas id="salesChart" height="110"></canvas></div>
             </div>
@@ -102,7 +102,11 @@
                                     <td><a href="{{ route('admin.orders.show', $order->unique_id) }}" class="title">#{{ $order->order_number }}</a><div class="small text-muted">{{ $order->created_at->diffForHumans() }}</div></td>
                                     <td>{{ $order->customer_name }}<div class="small text-muted">{{ $order->mobile }} · {{ optional($order->district)->name }}</div></td>
                                     <td class="fw-semibold">{{ money($order->total) }}</td>
-                                    <td class="fw-semibold {{ $order->profit >= 0 ? 'text-success' : 'text-danger' }}">{{ money($order->profit) }}</td>
+                                    @if($order->status === 'delivered')
+                                        <td class="fw-semibold {{ $order->profit >= 0 ? 'text-success' : 'text-danger' }}">{{ money($order->profit) }}</td>
+                                    @else
+                                        <td class="text-muted" title="Counted as profit once the order is delivered">{{ money($order->profit) }}<div class="small">expected</div></td>
+                                    @endif
                                     <td>{!! order_status_badge($order->status) !!}</td>
                                     <td>{!! $order->otp_verified ? '<i class="bi bi-patch-check-fill text-success" title="Verified"></i>' : '<i class="bi bi-x-octagon-fill text-danger" title="Not verified"></i>' !!}</td>
                                 </tr>
@@ -133,7 +137,8 @@
                     <div class="mt-3 p-3 rounded-3" style="background: var(--brand-50)">
                         <div class="small text-muted">Lifetime</div>
                         <div class="d-flex justify-content-between"><span>Revenue</span><strong>{{ money($data['lifetime']['revenue']) }}</strong></div>
-                        <div class="d-flex justify-content-between"><span>Profit</span><strong class="text-success">{{ money($data['lifetime']['profit']) }}</strong></div>
+                        <div class="d-flex justify-content-between"><span>Net profit <small class="text-muted">(delivered)</small></span><strong class="text-success">{{ money($data['lifetime']['profit']) }}</strong></div>
+                        <div class="d-flex justify-content-between small text-muted"><span>Expected (on the way)</span><span>{{ money($data['lifetime']['expected_profit'] ?? 0) }}</span></div>
                     </div>
                 </div>
             </div>
