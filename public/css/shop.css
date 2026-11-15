@@ -498,3 +498,23 @@ img { max-width: 100%; }
 .complaint-card { max-width: 760px; margin: 0 auto; }
 .complaint-done { text-align: center; padding: 1.5rem 1rem; }
 .complaint-no { font-size: 2.2rem; font-weight: 800; letter-spacing: .08em; color: var(--brand); }
+
+/* Checkout: "You may need" (related products of the cart items) */
+.may-need { border: 1px dashed #c7d2fe; background: #f8faff; border-radius: 12px; padding: .7rem .75rem .35rem; margin: .25rem 0 1rem; }
+.may-need-title { font-weight: 700; font-size: .9rem; color: var(--brand); margin-bottom: .4rem; }
+.may-need-item { display: flex; align-items: center; gap: .6rem; padding: .4rem 0; border-top: 1px solid #eef0f6; }
+.may-need-item:first-of-type { border-top: 0; }
+.may-need-item img { width: 48px; height: 48px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); background: #fff; flex: 0 0 48px; }
+.may-need-add { flex: 0 0 36px; width: 36px; height: 36px; border-radius: 10px; border: 0; background: var(--brand); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; transition: background .15s; }
+.may-need-add:hover { background: var(--brand-600); }
+.may-need-add:disabled { opacity: .7; }
+
+/* Language switch (EN / বাংলা) — top bar + mobile menu */
+.lang-switch { display: inline-flex; border: 1px solid rgba(148, 163, 184, .45); border-radius: 999px; overflow: hidden; font-size: .75rem; line-height: 1; }
+.lang-switch > * { padding: .3rem .6rem; }
+.lang-switch .active { background: var(--brand); color: #fff; font-weight: 600; }
+.lang-switch a { color: inherit; text-decoration: none; }
+.lang-switch a:hover { background: rgba(79, 70, 229, .12); }
+.topbar .lang-switch a { color: #cbd5e1; }
+.topbar .lang-switch a:hover { color: #fff; background: rgba(255, 255, 255, .1); }
+.offcanvas .lang-switch { border-color: var(--line); }

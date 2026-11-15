@@ -122,6 +122,8 @@
                     </div>
                 </div>
 
+                @include('admin.products.partials.related')
+
                 @include('admin.partials.seo-fields', ['model' => $product,
                     'preview' => ['type' => 'product', 'path' => url('/product').'/', 'name' => '[name="name"]', 'desc' => ['[name="short_description"]', '[name="description"]'], 'image' => '#thumbPreview'],
                     'titleHint' => 'Defaults to the product name', 'descHint' => 'Defaults to the short description (~155 characters)', 'imageHint' => 'Leave empty to use the product thumbnail.'])

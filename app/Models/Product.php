@@ -104,6 +104,13 @@ class Product extends Model
         return route('product.show', $this->slug);
     }
 
+    /** Related products chosen on the admin product form (shown as "You may need" on checkout), in the admin's order. */
+    public function relatedProducts()
+    {
+        return $this->belongsToMany(Product::class, 'product_related', 'product_id', 'related_id')
+            ->withPivot('sort_order')->withTimestamps()->orderBy('product_related.sort_order');
+    }
+
     public function getThumbUrlAttribute(): string
     {
         return img_url($this->thumbnail);

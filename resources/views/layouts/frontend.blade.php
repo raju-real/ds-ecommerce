@@ -17,7 +17,7 @@
     if ($whatsapp && str_starts_with($whatsapp, '01')) { $whatsapp = '88'.$whatsapp; }
 @endphp
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -146,6 +146,7 @@
             searchMin: {{ (int) config('shop.search.min_chars') }},
             flash: { success: @json(session('success')), error: @json(session('error')) }
         };
+        @if(app()->getLocale() !== 'en')window.I18N = @json(\App\Support\Locale::jsDictionary());@endif
     </script>
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

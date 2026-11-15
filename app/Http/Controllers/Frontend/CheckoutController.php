@@ -58,6 +58,8 @@ class CheckoutController extends Controller
 
         return view('frontend.checkout.index', [
             'items' => $items,
+            // "You may need": products the admin linked to what is in the cart (not already in it).
+            'suggestions' => app(\App\Repositories\ProductRepository::class)->suggestionsForCart($items->map(fn ($l) => $l->product->id)->all()),
             'districts' => $this->locations->districts(),
         ]);
     }

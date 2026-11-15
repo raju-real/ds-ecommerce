@@ -4,7 +4,7 @@
     $pending = $orderCounts['pending'] ?? 0;
 @endphp
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -15,6 +15,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    @if(app()->getLocale() === 'bn')
+        <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <style>html[lang=bn] body { font-family: "Inter", "Hind Siliguri", system-ui, sans-serif; }</style>
+    @endif
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
@@ -106,10 +110,12 @@
                     <button class="icon-btn" title="Refresh cache" aria-label="Refresh cache"><i class="bi bi-arrow-repeat"></i></button>
                 </form>
                 <a href="{{ route('home') }}" target="_blank" class="icon-btn" title="View store" aria-label="View store"><i class="bi bi-box-arrow-up-right"></i></a>
+                {{-- Language (English / Bangla) — same choice as the shop --}}
+                <a href="{{ route('lang.switch', app()->getLocale() === 'bn' ? 'en' : 'bn') }}" class="icon-btn lang-btn" title="{{ app()->getLocale() === 'bn' ? 'Switch to English' : 'বাংলায় দেখুন' }}" aria-label="Change language">{{ app()->getLocale() === 'bn' ? 'EN' : 'বাং' }}</a>
                 <div class="dropdown">
                     <button class="btn p-0 d-flex align-items-center gap-2 border-0" data-bs-toggle="dropdown" aria-expanded="false">
-                        <span class="avatar">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
-                        <span class="d-none d-md-block text-start lh-sm"><span class="fw-semibold d-block">{{ auth()->user()->name }}</span><small class="text-muted">Administrator</small></span>
+                        <span class="avatar" translate="no">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
+                        <span class="d-none d-md-block text-start lh-sm"><span class="fw-semibold d-block" translate="no">{{ auth()->user()->name }}</span><small class="text-muted">Administrator</small></span>
                         <i class="bi bi-chevron-down small text-muted d-none d-md-block"></i>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" style="border-radius: 12px">
@@ -138,6 +144,7 @@
     <script>
         window.ADMIN_FLASH = { success: @json(session('success')), error: @json(session('error')) };
         window.ADMIN_NOTIFY = { url: @json(route('admin.notifications.summary')), latestId: @json($notify['latest']->first()?->id) };
+        @if(app()->getLocale() !== 'en')window.I18N = @json(\App\Support\Locale::jsDictionary());@endif
     </script>
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

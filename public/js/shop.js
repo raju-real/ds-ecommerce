@@ -281,6 +281,51 @@
             });
         });
 
+        // "You may need" (related products): add to the cart, show it as a normal cart line, recalculate the totals
+        // (subtotal → delivery → coupon → total) exactly like a quantity change.
+        $checkout.on('click', '[data-suggest-add]', function () {
+            const $btn = $(this), id = String($btn.data('suggest-add'));
+            const $item = $btn.closest('.may-need-item');
+            $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
+            $.post(S.cartAddUrl, { product_id: id, qty: 1 })
+                .done((res) => {
+                    const item = (res.items || []).find((i) => String(i.id) === id);
+                    const $lines = $('#checkoutLines');
+                    if (item && !$lines.find(`.cart-line[data-id="${id}"]`).length) {
+                        $lines.append(`<div class="cart-line" data-id="${esc(item.id)}">
+                            <img src="${esc(item.image)}" alt="${esc(item.name)}" width="64" height="64">
+                            <div class="flex-grow-1 min-w-0">
+                                <a href="${esc(item.url)}" class="name d-block text-truncate">${esc(item.name)}</a>
+                                <div class="small text-muted mb-1">${esc(item.price)} each</div>
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="qty qty-sm">
+                                        <button type="button" data-step="-1" aria-label="Decrease">−</button>
+                                        <input type="number" value="${esc(item.qty)}" min="1" max="${esc($lines.data('max-qty') || 99)}" placeholder="1" aria-label="Quantity">
+                                        <button type="button" data-step="1" aria-label="Increase">+</button>
+                                    </div>
+                                    <strong data-line-total>${esc(item.total)}</strong>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-link text-muted p-1" data-checkout-remove aria-label="Remove"><i class="bi bi-x-lg"></i></button>
+                        </div>`);
+                    } else if (item) {
+                        const $line = $lines.find(`.cart-line[data-id="${id}"]`);
+                        $line.find('input').val(item.qty); $line.find('[data-line-total]').text(item.total);
+                    }
+                    subtotal = parseFloat(res.subtotal) || 0;
+                    setCount(res.count);
+                    updateTotals();
+                    recheckCoupon();
+                    if (window.fbPixelFire && res.pixel) window.fbPixelFire(res.pixel);
+                    $item.slideUp(200, () => { $item.remove(); if (!$('#mayNeed .may-need-item').length) $('#mayNeed').slideUp(150); });
+                })
+                .fail((x) => {
+                    $btn.prop('disabled', false).html('<i class="bi bi-bag-plus"></i>');
+                    const msg = (x.responseJSON && x.responseJSON.message) || 'Could not add this product. Please try again.';
+                    if (window.Swal) Swal.fire({ toast: true, position: 'top-end', icon: 'error', title: msg, showConfirmButton: false, timer: 3000 }); else alert(msg);
+                });
+        });
+
         // "Please wait…" while the order is placed: ui.js (all forms).
     }
 

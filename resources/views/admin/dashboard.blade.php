@@ -6,10 +6,10 @@
     <div class="page-header">
         <div>
             <h1>Dashboard</h1>
-            <p class="text-muted mb-0">Welcome back, {{ auth()->user()->name }}. Here's how your store is doing.</p>
+            <p class="text-muted mb-0">{{ __("Welcome back,") }} <span translate="no">{{ auth()->user()->name }}</span>. {{ __("Here's how your store is doing.") }}</p>
         </div>
         <div class="d-flex gap-2">
-            <a href="{{ route('admin.orders.index', ['status' => 'pending']) }}" class="btn btn-soft-primary"><i class="bi bi-hourglass-split me-1"></i> Pending orders ({{ $counts['pending'] ?? 0 }})</a>
+            <a href="{{ route('admin.orders.index', ['status' => 'pending']) }}" class="btn btn-soft-primary"><i class="bi bi-hourglass-split me-1"></i> {{ __("Pending orders") }} ({{ $counts['pending'] ?? 0 }})</a>
             <a href="{{ route('admin.reports') }}" class="btn btn-primary"><i class="bi bi-graph-up-arrow me-1"></i> Reports</a>
         </div>
     </div>
@@ -21,7 +21,7 @@
                 <div>
                     <div class="label">Today's orders</div>
                     <div class="value">{{ number_format($data['today']['orders']) }}</div>
-                    <div class="sub">Revenue {{ money($data['today']['revenue']) }}</div>
+                    <div class="sub">{{ __("Revenue") }} {{ money($data['today']['revenue']) }}</div>
                 </div>
             </div>
         </div>
@@ -31,7 +31,7 @@
                 <div>
                     <div class="label">Today's net profit</div>
                     <div class="value text-success">{{ money($data['today']['profit']) }}</div>
-                    <div class="sub" title="Net profit counts delivered orders only (after vendor, courier and VAT cost)">Delivered orders · {{ money($data['today']['expected_profit'] ?? 0) }} expected</div>
+                    <div class="sub" title="Net profit counts delivered orders only (after vendor, courier and VAT cost)">{{ __("Delivered orders") }} · {{ money($data['today']['expected_profit'] ?? 0) }} {{ __("expected") }}</div>
                 </div>
             </div>
         </div>
@@ -41,7 +41,7 @@
                 <div>
                     <div class="label">This month</div>
                     <div class="value">{{ money($data['month']['revenue']) }}</div>
-                    <div class="sub">{{ number_format($data['month']['orders']) }} orders · net profit {{ money($data['month']['profit']) }} <span class="text-muted" title="Delivered orders only">({{ number_format($data['month']['delivered'] ?? 0) }} delivered)</span></div>
+                    <div class="sub">{{ number_format($data['month']['orders']) }} {{ __("orders") }} · {{ __("net profit") }} {{ money($data['month']['profit']) }} <span class="text-muted" title="Delivered orders only">({{ number_format($data['month']['delivered'] ?? 0) }} {{ __("delivered") }})</span></div>
                 </div>
             </div>
         </div>
@@ -185,9 +185,9 @@
                 data: {
                     labels: c.labels,
                     datasets: [
-                        { type: 'bar', label: 'Revenue', data: c.revenue, backgroundColor: 'rgba(79,70,229,.18)', borderColor: '#4f46e5', borderWidth: 0, borderRadius: 6, yAxisID: 'y' },
-                        { type: 'line', label: 'Profit', data: c.profit, borderColor: '#16a34a', backgroundColor: '#16a34a', tension: .35, pointRadius: 3, yAxisID: 'y' },
-                        { type: 'line', label: 'Orders', data: c.orders, borderColor: '#f97316', borderDash: [4, 4], pointRadius: 0, tension: .35, yAxisID: 'y1' },
+                        { type: 'bar', label: @json(__('Revenue')), data: c.revenue, backgroundColor: 'rgba(79,70,229,.18)', borderColor: '#4f46e5', borderWidth: 0, borderRadius: 6, yAxisID: 'y' },
+                        { type: 'line', label: @json(__('Profit')), data: c.profit, borderColor: '#16a34a', backgroundColor: '#16a34a', tension: .35, pointRadius: 3, yAxisID: 'y' },
+                        { type: 'line', label: @json(__('Orders')), data: c.orders, borderColor: '#f97316', borderDash: [4, 4], pointRadius: 0, tension: .35, yAxisID: 'y1' },
                     ],
                 },
                 options: {

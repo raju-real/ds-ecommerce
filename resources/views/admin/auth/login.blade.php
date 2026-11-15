@@ -1,12 +1,16 @@
 @php($siteName = setting('site_name', config('app.name')))
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
     <title>Sign in · {{ $siteName }} Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    @if(app()->getLocale() === 'bn')
+        <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <style>html[lang=bn] body { font-family: "Inter", "Hind Siliguri", system-ui, sans-serif; }</style>
+    @endif
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="{{ asset('css/admin.css') }}?v={{ filemtime(public_path('css/admin.css')) }}" rel="stylesheet">
@@ -50,6 +54,12 @@
                     <button class="btn btn-primary btn-lg w-100">Sign in <i class="bi bi-arrow-right ms-1"></i></button>
                 </form>
                 <p class="text-center small text-muted mt-4 mb-0"><a href="{{ route('home') }}" class="text-muted"><i class="bi bi-arrow-left me-1"></i>Back to store</a></p>
+                <p class="text-center small mt-2 mb-0" translate="no">
+                    @foreach(\App\Support\Locale::SUPPORTED as $code => $label)
+                        @if(! $loop->first)<span class="text-muted mx-1">·</span>@endif
+                        @if($code === app()->getLocale())<strong>{{ $label }}</strong>@else<a href="{{ route('lang.switch', $code) }}" class="text-muted">{{ $label }}</a>@endif
+                    @endforeach
+                </p>
             </div>
         </div>
     </div>

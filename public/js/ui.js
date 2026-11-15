@@ -211,3 +211,41 @@
     // Back/forward cache: the page comes back exactly as it was left — re-enable everything.
     window.addEventListener('pageshow', (e) => { if (e.persisted) Busy.stopAll(); });
 })(jQuery);
+
+/* 3) Bangla pages: texts written later by JavaScript (toasts, dialogs, cart lines, search results …).
+ *    The server already translated the page itself; window.I18N (only on Bangla pages) holds the
+ *    texts the scripts use. Same rule as the server: only a whole text that matches exactly is replaced. */
+(function () {
+    var dict = window.I18N;
+    if (!dict || typeof MutationObserver === 'undefined') return;
+    var ATTRS = ['placeholder', 'title', 'aria-label', 'data-bs-original-title'];
+    var SKIP = { SCRIPT: 1, STYLE: 1, TEXTAREA: 1, PRE: 1, CODE: 1, INPUT: 1 };
+
+    function text(node) {
+        var raw = node.nodeValue, core = raw.trim();
+        if (core && dict.hasOwnProperty(core)) node.nodeValue = raw.replace(core, dict[core]);
+    }
+    function attrs(el) {
+        for (var i = 0; i < ATTRS.length; i++) {
+            var v = el.getAttribute(ATTRS[i]);
+            if (v && dict.hasOwnProperty(v.trim())) el.setAttribute(ATTRS[i], dict[v.trim()]);
+        }
+    }
+    function walk(root) {
+        if (root.nodeType === 3) { if (root.parentNode && !SKIP[root.parentNode.nodeName]) text(root); return; }
+        if (root.nodeType !== 1 || SKIP[root.nodeName] || root.closest && root.closest('[translate="no"]')) return;
+        attrs(root);
+        var w = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, {
+            acceptNode: function (n) { return n.nodeType === 1 && SKIP[n.nodeName] ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT; }
+        });
+        for (var n = w.nextNode(); n; n = w.nextNode()) { n.nodeType === 3 ? text(n) : attrs(n); }
+    }
+    window.__t = function (s) { return dict.hasOwnProperty(s) ? dict[s] : s; };
+    new MutationObserver(function (list) {
+        for (var i = 0; i < list.length; i++) {
+            var m = list[i];
+            if (m.type === 'characterData') { text(m.target); continue; }
+            for (var j = 0; j < m.addedNodes.length; j++) walk(m.addedNodes[j]);
+        }
+    }).observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+})();

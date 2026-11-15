@@ -15,5 +15,6 @@ class EncryptCookies extends Middleware
         // Set by the Facebook Pixel script in the browser (plain text); read for the Conversions API.
         '_fbp',
         '_fbc',
+        'lang', // site language (en / bn), plain so it can be read before decryption is set up
     ];
 }

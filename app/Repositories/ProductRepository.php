@@ -145,6 +145,30 @@ class ProductRepository
             ->where('is_active', true)->with('images')->find($id));
     }
 
+    /**
+     * "You may need" on checkout: products the admin linked to anything in the cart, not already in it,
+     * active and in stock, in the admin's order (first cart item first). Empty before the migration.
+     */
+    public function suggestionsForCart(array $cartIds, int $limit = 6): Collection
+    {
+        $cartIds = array_values(array_unique(array_map('intval', $cartIds)));
+        if (! $cartIds || ! \Illuminate\Support\Facades\Schema::hasTable('product_related')) {
+            return collect();
+        }
+        sort($cartIds);
+
+        return ModelCache::remember(ModelCache::PRODUCTS, 'cart-suggest:'.implode(',', $cartIds).':'.$limit, function () use ($cartIds, $limit) {
+            $links = \Illuminate\Support\Facades\DB::table('product_related')->whereIn('product_id', $cartIds)->whereNotIn('related_id', $cartIds)
+                ->orderBy('product_id')->orderBy('sort_order')->pluck('related_id')->unique()->values();
+            if ($links->isEmpty()) {
+                return collect();
+            }
+            $products = $this->cardQuery()->whereIn('id', $links)->where('in_stock', true)->get()->keyBy('id');
+
+            return $links->map(fn ($id) => $products->get($id))->filter()->take($limit)->values();
+        });
+    }
+
     public function related(Product $product, int $limit = 4): Collection
     {
         return ModelCache::remember(ModelCache::PRODUCTS, "related:{$product->id}:$limit", fn () => $this->cardQuery()

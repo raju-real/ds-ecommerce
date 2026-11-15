@@ -8,6 +8,7 @@
             @if(setting('phone'))<a href="tel:{{ setting('phone') }}"><i class="bi bi-telephone me-1"></i>{{ setting('phone') }}</a>@endif
             @if(setting('email'))<a href="mailto:{{ setting('email') }}" class="d-none d-lg-inline"><i class="bi bi-envelope me-1"></i>{{ setting('email') }}</a>@endif
             <a href="{{ route('track') }}"><i class="bi bi-truck me-1"></i>Track Order</a>
+            @include('frontend.partials.lang-switch')
             <span class="social d-flex gap-1">
                 @foreach(['facebook' => 'Facebook', 'messenger' => 'Messenger', 'instagram' => 'Instagram', 'youtube' => 'YouTube', 'tiktok' => 'TikTok'] as $key => $label)
                     @if(setting($key))<a href="{{ setting($key) }}" target="_blank" rel="noopener" aria-label="{{ $label }}" title="{{ $key === 'messenger' ? 'Chat on Messenger' : $label }}"><i class="bi bi-{{ $key }}"></i></a>@endif
@@ -23,7 +24,7 @@
         <div class="d-flex align-items-center gap-3 gap-lg-4">
             <button class="btn btn-link text-dark p-0 d-lg-none fs-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu" aria-label="Open menu"><i class="bi bi-list"></i></button>
 
-            <a href="{{ route('home') }}" class="logo flex-shrink-0" aria-label="{{ $siteName }}">
+            <a href="{{ route('home') }}" class="logo flex-shrink-0" translate="no" aria-label="{{ $siteName }}">
                 @if(setting('logo'))
                     <img src="{{ img_url(setting('logo')) }}" alt="{{ $siteName }}" height="44">
                 @else
@@ -133,6 +134,7 @@
             <a href="{{ route('track') }}" class="list-group-item list-group-item-action py-3"><i class="bi bi-truck me-2"></i>Track Order</a>
             <a href="{{ route('complaint') }}" class="list-group-item list-group-item-action py-3"><i class="bi bi-megaphone me-2"></i>Complaint</a>
             @if($hasBlog)<a href="{{ route('blog.index') }}" class="list-group-item list-group-item-action py-3"><i class="bi bi-journal-text me-2"></i>Blog</a>@endif
+            <div class="list-group-item py-3 d-flex align-items-center gap-2"><i class="bi bi-translate"></i>@include('frontend.partials.lang-switch', ['class' => 'ms-auto'])</div>
         </div>
     </div>
 </div>

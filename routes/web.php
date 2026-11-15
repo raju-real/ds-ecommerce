@@ -51,6 +51,8 @@ Route::controller(Frontend\CheckoutController::class)->group(function () {
 
 Route::get('/track-order', [Frontend\TrackOrderController::class, 'index'])->middleware('throttle:track')->name('track');
 Route::get('/locations/{districtId}/thanas', [Frontend\LocationController::class, 'thanas'])->name('locations.thanas');
+// Language switcher (shop + admin): English / Bangla, remembered for a year, back to the same page.
+Route::get('/lang/{locale}', [App\Http\Controllers\LocaleController::class, 'switch'])->where('locale', '[a-z]{2}')->name('lang.switch');
 Route::get('/sitemap.xml', [Frontend\SeoController::class, 'sitemap'])->name('sitemap');
 Route::get('/robots.txt', [Frontend\SeoController::class, 'robots']);
 Route::get('/favicon.ico', [Frontend\SeoController::class, 'favicon'])->name('favicon');

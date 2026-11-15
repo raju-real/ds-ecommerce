@@ -56,6 +56,7 @@ class ProductController extends Controller
         $product = DB::transaction(function () use ($data, $request) {
             $product = Product::create($data);
             $this->storeImages($product, $request);
+            $this->syncRelated($product, $request);
 
             return $product;
         });
@@ -95,6 +96,7 @@ class ProductController extends Controller
         DB::transaction(function () use ($model, $data, $request) {
             $model->update($data);
             $this->storeImages($model, $request);
+            $this->syncRelated($model, $request);
         });
 
         return redirect()->route('admin.products.index')->with('success', "Product “{$model->name}” updated.");
@@ -270,10 +272,32 @@ class ProductController extends Controller
     {
         return view('admin.products.form', [
             'product' => $product,
+            // Related products for the "You may need" picker (checkout), in the saved order.
+            'related' => $product->exists && \Illuminate\Support\Facades\Schema::hasTable('product_related')
+                ? $product->relatedProducts()->get(['products.id', 'products.unique_id', 'products.name', 'products.code', 'products.thumbnail', 'products.unit_price', 'products.discount_price', 'products.is_active'])
+                : collect(),
             'categories' => $this->categories->all(),
             'vendors' => $this->vendors->all(),
             'brands' => $this->brands->all(),
         ]);
+    }
+
+    /** "You may need" picker: related[] = product unique ids in the chosen order (max 20, never the product itself). */
+    protected function syncRelated(Product $product, Request $request): void
+    {
+        if (! $request->has('related_present') || ! \Illuminate\Support\Facades\Schema::hasTable('product_related')) {
+            return;
+        }
+        $uids = array_slice(array_values(array_unique(array_filter((array) $request->input('related', []), fn ($u) => is_string($u) && preg_match('/^[a-z]{10}$/', $u)))), 0, 20);
+        $ids = Product::whereIn('unique_id', $uids)->where('id', '!=', $product->id)->pluck('id', 'unique_id');
+        $sync = [];
+        foreach ($uids as $i => $uid) {
+            if (isset($ids[$uid])) {
+                $sync[$ids[$uid]] = ['sort_order' => $i];
+            }
+        }
+        $product->relatedProducts()->sync($sync);
+        ModelCache::bump(ModelCache::PRODUCTS); // checkout suggestions
     }
 
     protected function storeImages(Product $product, Request $request): void

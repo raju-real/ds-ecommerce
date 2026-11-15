@@ -1,6 +1,6 @@
 {{-- Standalone error page: no database, cache or layout, so it still renders when those are the problem. --}}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">

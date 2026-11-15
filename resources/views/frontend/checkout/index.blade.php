@@ -94,7 +94,7 @@
                         <div class="checkout-card position-sticky" style="top: 140px">
                             <h5><span class="step-num">3</span> Order summary</h5>
 
-                            <div class="mb-2">
+                            <div class="mb-2" id="checkoutLines" data-max-qty="{{ \App\Services\CartService::MAX_QTY }}">
                                 @foreach($items as $line)
                                     <div class="cart-line" data-id="{{ $line->product->id }}">
                                         <img src="{{ $line->product->thumb_url }}" alt="{{ $line->product->name }}" width="64" height="64">
@@ -114,6 +114,23 @@
                                     </div>
                                 @endforeach
                             </div>
+
+                            {{-- You may need: related products of the cart items (admin product form → Related products) --}}
+                            @if($suggestions->isNotEmpty())
+                                <div class="may-need" id="mayNeed">
+                                    <div class="may-need-title"><i class="bi bi-stars me-1"></i>You may need</div>
+                                    @foreach($suggestions as $sp)
+                                        <div class="may-need-item" data-suggest-id="{{ $sp->id }}">
+                                            <img src="{{ $sp->thumb_url }}" alt="{{ $sp->name }}" width="48" height="48" loading="lazy">
+                                            <div class="flex-grow-1 min-w-0">
+                                                <a href="{{ $sp->url }}" class="d-block text-truncate fw-semibold small text-body" target="_blank" rel="noopener">{{ $sp->name }}</a>
+                                                <div class="small"><span class="fw-semibold text-primary">{{ money($sp->selling_price) }}</span>@if($sp->hasDiscount())<span class="text-muted text-decoration-line-through ms-1">{{ money($sp->unit_price) }}</span>@endif</div>
+                                            </div>
+                                            <button type="button" class="may-need-add" data-suggest-add="{{ $sp->id }}" title="Add to cart" aria-label="Add {{ $sp->name }} to cart"><i class="bi bi-bag-plus"></i></button>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
 
                             <div class="summary-row"><span class="text-muted">Subtotal</span><span id="sumSubtotal">{{ money($items->sum('total')) }}</span></div>
                             <div class="summary-row"><span class="text-muted">Delivery charge</span><span id="sumDelivery">Select district</span></div>
