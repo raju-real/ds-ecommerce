@@ -34,7 +34,7 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label" for="cp-name">Your name <span class="text-danger">*</span></label>
-                            <input type="text" name="name" id="cp-name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" maxlength="80" required>
+                            <input type="text" name="name" id="cp-name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" maxlength="80" placeholder="Your name" required>
                             @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6">

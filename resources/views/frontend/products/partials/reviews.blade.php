@@ -51,7 +51,7 @@
             <div class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label" for="rv-name">Your name <span class="text-danger">*</span></label>
-                    <input type="text" name="name" id="rv-name" class="form-control {{ $err->has('name') ? 'is-invalid' : '' }}" value="{{ $old('name') }}" maxlength="80" required>
+                    <input type="text" name="name" id="rv-name" class="form-control {{ $err->has('name') ? 'is-invalid' : '' }}" value="{{ $old('name') }}" maxlength="80" placeholder="Your name" required>
                     @if($err->has('name'))<div class="invalid-feedback">{{ $err->first('name') }}</div>@endif
                 </div>
                 <div class="col-md-4">
