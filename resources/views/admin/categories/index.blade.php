@@ -24,7 +24,7 @@
         </div>
         <div class="table-responsive">
             <table class="table table-hover">
-                <thead><tr><th>Category</th><th>Slug</th><th class="text-center">Subcategories</th><th class="text-center">Products</th><th class="text-center">Order</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+                <thead><tr><th>Category</th><th>Slug</th><th class="text-center">Subcategories</th><th class="text-center">Products</th><th class="text-center">Sort Order</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
                 <tbody>
                     @forelse($categories as $cat)
                         <tr>
