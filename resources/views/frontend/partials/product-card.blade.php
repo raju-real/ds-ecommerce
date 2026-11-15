@@ -17,6 +17,9 @@
         </a>
         <div class="body">
             <a href="{{ $product->url }}" class="title">{{ $product->name }}</a>
+            @if(($product->rating_count ?? 0) > 0)
+                <div class="card-rating">@include('frontend.partials.stars', ['rating' => $product->rating_avg])<span>({{ $product->rating_count }})</span></div>
+            @endif
             <div class="price">
                 <span class="now">{{ money($product->selling_price) }}</span>
                 @if($product->hasDiscount())<span class="old">{{ money($product->unit_price) }}</span>@endif

@@ -15,6 +15,13 @@ class DashboardController extends Controller
             'data' => $orders->dashboard(),
             'counts' => $orders->statusCounts(),
             'productStats' => $products->stats(),
+            // Complaints still to handle (received / on review), newest first — once the migration has run.
+            'complaints' => \Illuminate\Support\Facades\Schema::hasTable('complaints')
+                ? \App\Models\Complaint::whereIn('status', \App\Models\Complaint::OPEN)->latest('id')->take(5)->get()
+                : collect(),
+            'openComplaints' => \Illuminate\Support\Facades\Schema::hasTable('complaints')
+                ? \App\Models\Complaint::whereIn('status', \App\Models\Complaint::OPEN)->count()
+                : 0,
         ]);
     }
 

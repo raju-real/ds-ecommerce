@@ -46,6 +46,8 @@ return [
         'favicon' => [192, 192],    // Google shows favicons whose size is a multiple of 48 px (48, 96, 192 …)
         'blog' => ['large' => [1200, 630], 'thumb' => [600, 315]], // cover cropped to the social-share ratio
         'page' => [1200, 630],                                     // optional page banner (Website → Pages), also the share image
+        'review' => [1200, 1200],                                  // customer review photos (scaled down, never cropped)
+        'complaint' => [1600, 1600],                               // complaint photos (scaled down, never cropped)
         'editor' => [1200, 1600],
         'share' => [1200, 630],                                    // meta (share) image of products, categories, brands, blogs                                   // images inside blog/product text, scaled down only
     ],
@@ -68,6 +70,8 @@ return [
         'meta_image' => 4096,
         'blog' => 4096,
         'page' => 4096,
+        'review' => 5120,
+        'complaint' => 5120,
         'editor' => 4096,
 
         // Smallest accepted image (width x height), enforced on both sides.

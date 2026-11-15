@@ -43,6 +43,17 @@
                         'availability' => $product->in_stock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
                         'itemCondition' => 'https://schema.org/NewCondition',
                     ],
+                    // Customer ratings (Search Console: aggregateRating / review) — only when there are reviews.
+                    ...($reviews['count'] > 0 ? [
+                        'aggregateRating' => ['@type' => 'AggregateRating', 'ratingValue' => $reviews['average'], 'reviewCount' => $reviews['count'], 'bestRating' => 5, 'worstRating' => 1],
+                        'review' => $reviews['reviews']->take(5)->map(fn ($rv) => [
+                            '@type' => 'Review',
+                            'author' => ['@type' => 'Person', 'name' => $rv->name],
+                            'datePublished' => $rv->created_at->toDateString(),
+                            'reviewBody' => \Illuminate\Support\Str::limit($rv->review, 500),
+                            'reviewRating' => ['@type' => 'Rating', 'ratingValue' => $rv->rating, 'bestRating' => 5, 'worstRating' => 1],
+                        ])->values()->all(),
+                    ] : []),
                 ],
                 [
                     '@type' => 'BreadcrumbList',
@@ -98,6 +109,8 @@
                 </div>
             </div>
         </div>
+
+        @include('frontend.products.partials.reviews')
 
         @if($related->isNotEmpty())
             <section class="section pb-0">

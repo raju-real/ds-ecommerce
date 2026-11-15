@@ -63,8 +63,8 @@
     </div>
 
     <nav class="cat-nav d-none d-lg-block" aria-label="Categories">
-        <div class="container">
-            <ul class="nav cat-scroll flex-nowrap">
+        <div class="container d-flex align-items-center">
+            <ul class="nav cat-scroll flex-nowrap flex-grow-1 min-w-0">
                 <li class="nav-item"><a class="nav-link ps-0 {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">Home</a></li>
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('products.index') ? 'active' : '' }}" href="{{ route('products.index') }}">All Products</a></li>
                 @foreach($menuCategories as $cat)
@@ -94,6 +94,10 @@
                 @if($hasBlog)
                     <li class="nav-item"><a class="nav-link {{ request()->routeIs('blog.*') ? 'active' : '' }}" href="{{ route('blog.index') }}">Blog</a></li>
                 @endif
+            </ul>
+            {{-- Always on the right, outside the scrolling category list --}}
+            <ul class="nav flex-nowrap nav-complaint">
+                <li class="nav-item"><a class="nav-link pe-0 {{ request()->routeIs('complaint') ? 'active' : '' }}" href="{{ route('complaint') }}"><i class="bi bi-megaphone me-1"></i>Complaint</a></li>
             </ul>
         </div>
     </nav>
@@ -127,6 +131,7 @@
                 </div>
             @endforeach
             <a href="{{ route('track') }}" class="list-group-item list-group-item-action py-3"><i class="bi bi-truck me-2"></i>Track Order</a>
+            <a href="{{ route('complaint') }}" class="list-group-item list-group-item-action py-3"><i class="bi bi-megaphone me-2"></i>Complaint</a>
             @if($hasBlog)<a href="{{ route('blog.index') }}" class="list-group-item list-group-item-action py-3"><i class="bi bi-journal-text me-2"></i>Blog</a>@endif
         </div>
     </div>

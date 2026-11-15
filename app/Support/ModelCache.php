@@ -29,6 +29,8 @@ class ModelCache
     public const SHORTLINK_STATS = 'shortlink-stats';  // admin list with click counts (bumped on every counted click)
     public const NOTIFICATIONS = 'notifications';
     public const COUPONS = 'coupons';
+    public const REVIEWS = 'reviews';            // product ratings & reviews
+    public const COMPLAINTS = 'complaints';      // customer complaints (admin)
     public const PAGES = 'pages';                // Website → Pages (footer links, /{slug} e.g. /privacy-policy)
 
     /** Per-request memo so each group's version is read from the store once. */
@@ -77,7 +79,7 @@ class ModelCache
     {
         static::bump(self::SETTINGS, self::CATEGORIES, self::VENDORS, self::PRODUCTS,
             self::LOCATIONS, self::SLIDERS, self::ORDERS, self::BRANDS, self::BLOGS,
-            self::SHORTLINKS, self::SHORTLINK_STATS, self::NOTIFICATIONS, self::COUPONS, self::PAGES);
+            self::SHORTLINKS, self::SHORTLINK_STATS, self::NOTIFICATIONS, self::COUPONS, self::PAGES, self::REVIEWS, self::COMPLAINTS);
     }
 
     /** Stable hash for a filter array so equal filters share a key. */

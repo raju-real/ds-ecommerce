@@ -16,6 +16,9 @@ Route::get('/category/{slug}', [Frontend\ProductController::class, 'category'])-
 Route::get('/category/{slug}/{sub}', [Frontend\ProductController::class, 'subcategory'])->name('subcategory.show');
 Route::get('/product/{slug}', [Frontend\ProductController::class, 'show'])->name('product.show');
 Route::get('/product/{slug}/quick-view', [Frontend\ProductController::class, 'quickView'])->name('product.quick-view');
+Route::post('/product/{slug}/reviews', [Frontend\ReviewController::class, 'store'])->middleware('throttle:6,1')->name('product.reviews.store');
+Route::get('/complaint', [Frontend\ComplaintController::class, 'create'])->name('complaint');
+Route::post('/complaint', [Frontend\ComplaintController::class, 'store'])->middleware('throttle:5,10')->name('complaint.store');
 Route::get('/brand/{slug}', [Frontend\ProductController::class, 'brand'])->name('brand.show');
 Route::get('/blog', [Frontend\BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{slug}', [Frontend\BlogController::class, 'show'])->name('blog.show');
@@ -104,6 +107,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::post('sliders/sort', [Admin\SliderController::class, 'saveSort'])->name('sliders.sort');
         Route::resource('sliders', Admin\SliderController::class)->except('show');
+        Route::get('reviews', [Admin\ReviewController::class, 'index'])->name('reviews.index');
+        Route::patch('reviews/{review}/toggle', [Admin\ReviewController::class, 'toggle'])->name('reviews.toggle');
+        Route::delete('reviews/{review}', [Admin\ReviewController::class, 'destroy'])->name('reviews.destroy');
+        Route::resource('complaints', Admin\ComplaintController::class)->only(['index', 'show', 'update', 'destroy']);
         Route::post('pages/sort', [Admin\PageController::class, 'saveSort'])->name('pages.sort');
         Route::patch('pages/{page}/toggle', [Admin\PageController::class, 'toggle'])->name('pages.toggle');
         Route::resource('pages', Admin\PageController::class)->except('show');

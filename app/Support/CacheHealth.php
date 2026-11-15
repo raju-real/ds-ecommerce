@@ -20,7 +20,7 @@ class CacheHealth
         ModelCache::BRANDS => 'Brands', ModelCache::SLIDERS => 'Sliders', ModelCache::BLOGS => 'Blog',
         ModelCache::ORDERS => 'Orders', ModelCache::COUPONS => 'Coupons', ModelCache::LOCATIONS => 'Districts & thanas',
         ModelCache::VENDORS => 'Vendors', ModelCache::SHORTLINKS => 'Short links', ModelCache::SHORTLINK_STATS => 'Short link clicks',
-        ModelCache::NOTIFICATIONS => 'Notifications', ModelCache::PAGES => 'Pages',
+        ModelCache::NOTIFICATIONS => 'Notifications', ModelCache::PAGES => 'Pages', ModelCache::REVIEWS => 'Reviews', ModelCache::COMPLAINTS => 'Complaints',
     ];
 
     public static function report(): array

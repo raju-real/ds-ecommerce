@@ -459,3 +459,42 @@ img { max-width: 100%; }
 
 /* Pages from Admin → Website → Pages (/page/{slug}) — same typography as blog posts, a readable width */
 .cms-page { max-width: 900px; }
+
+/* Ratings & reviews — stars in the shop accent colour */
+.stars { color: var(--accent); display: inline-flex; gap: 1px; line-height: 1; }
+.stars .bi-star { color: #fdba74; }
+.card-rating { display: flex; align-items: center; gap: .3rem; font-size: .78rem; margin: .1rem 0 .25rem; }
+.card-rating span { color: var(--muted); }
+.pd-rating { display: inline-flex; align-items: center; gap: .35rem; font-size: .9rem; color: var(--ink); margin-bottom: .75rem; text-decoration: none; }
+.pd-rating span { color: var(--muted); }
+.pd-rating:hover span { color: var(--brand); }
+.rv-summary { display: flex; gap: 2rem; align-items: center; flex-wrap: wrap; background: var(--surface); border-radius: 12px; padding: 1rem 1.25rem; }
+.rv-score { text-align: center; min-width: 110px; }
+.rv-avg { font-size: 2.6rem; font-weight: 800; line-height: 1; color: var(--ink); }
+.rv-bars { flex: 1 1 240px; display: grid; gap: .35rem; }
+.rv-bar { display: grid; grid-template-columns: 38px 1fr 28px; align-items: center; gap: .5rem; font-size: .82rem; }
+.rv-bar .bi { color: var(--accent); font-size: .72rem; }
+.rv-track { height: 8px; background: #e5e7eb; border-radius: 99px; overflow: hidden; }
+.rv-fill { height: 100%; background: var(--accent); border-radius: 99px; }
+.rv-form { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem 1.25rem; }
+.rv-stars-input { display: inline-flex; flex-direction: row-reverse; gap: .2rem; }
+.rv-stars-input input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.rv-stars-input label { font-size: 1.9rem; color: #e2e8f0; cursor: pointer; line-height: 1; transition: color .12s, transform .12s; }
+.rv-stars-input label:hover, .rv-stars-input label:hover ~ label, .rv-stars-input input:checked ~ label { color: var(--accent); }
+.rv-stars-input label:hover { transform: scale(1.08); }
+.rv-stars-input input:focus-visible + label { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 4px; }
+.rv-previews { display: flex; gap: .5rem; margin-top: .5rem; flex-wrap: wrap; }
+.rv-previews img { width: 72px; height: 72px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); }
+.rv-item { border-top: 1px solid var(--line); padding: 1rem 0; }
+.rv-name { font-weight: 700; }
+.rv-verified { font-size: .75rem; color: var(--success); margin-left: .4rem; }
+.rv-photos { display: flex; gap: .5rem; flex-wrap: wrap; }
+.rv-photos img { width: 84px; height: 84px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); }
+
+/* Complaint link in the menu bar + complaint page */
+.cat-nav .nav-complaint { margin-left: auto; align-self: flex-start; flex-shrink: 0; } /* first row, right side */
+@media (min-width: 992px) and (max-width: 1399.98px) { .cat-nav .cat-scroll .nav-link { padding-left: .8rem; padding-right: .8rem; } }
+.cat-nav .nav-complaint .nav-link { color: var(--accent-600); font-weight: 700; }
+.complaint-card { max-width: 760px; margin: 0 auto; }
+.complaint-done { text-align: center; padding: 1.5rem 1rem; }
+.complaint-no { font-size: 2.2rem; font-weight: 800; letter-spacing: .08em; color: var(--brand); }

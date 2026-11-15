@@ -47,6 +47,14 @@
                     ['Profit Reports', 'admin.reports', ['admin.reports']],
                 ]])
 
+            <div class="nav-title"><span>Customers</span></div>
+            @include('admin.partials.nav-group', ['id' => 'customers', 'label' => 'Customers', 'icon' => 'bi-people',
+                'badge' => ($openComplaints ?? 0) ? '<span class="badge bg-danger" title="Open complaints">'.$openComplaints.'</span>' : '',
+                'items' => [
+                    ['Complaints', 'admin.complaints.index', ['admin.complaints.*']],
+                    ['Reviews', 'admin.reviews.index', ['admin.reviews.*']],
+                ]])
+
             <div class="nav-title"><span>Catalog</span></div>
             @include('admin.partials.nav-group', ['id' => 'products', 'label' => 'Products', 'icon' => 'bi-box-seam', 'items' => [
                 ['All products', 'admin.products.index', ['admin.products.index', 'admin.products.show', 'admin.products.edit']],

@@ -53,6 +53,7 @@ class ProductController extends Controller
         return view('frontend.products.show', [
             'product' => $product,
             'related' => $this->products->related($product),
+            'reviews' => app(\App\Repositories\ReviewRepository::class)->forProduct($product->id),
         ]);
     }
 

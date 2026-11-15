@@ -27,6 +27,9 @@
         @else
             <h1 class="pd-title mt-1 mb-2">{{ $product->name }}</h1>
         @endif
+        @if(($product->rating_count ?? 0) > 0)
+            <a href="{{ $uid === 'qv' ? $product->url.'#reviews' : '#reviews' }}" class="pd-rating">@include('frontend.partials.stars', ['rating' => $product->rating_avg]) <strong>{{ number_format((float) $product->rating_avg, 1) }}</strong> <span>· {{ $product->rating_count }} {{ \Illuminate\Support\Str::plural('review', $product->rating_count) }}</span></a>
+        @endif
 
         <div class="d-flex flex-wrap gap-3 small text-muted mb-3">
             @if($product->brand)

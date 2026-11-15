@@ -69,6 +69,10 @@ class AppServiceProvider extends ServiceProvider
         View::composer('admin.layouts.app', function ($view) {
             $view->with('orderCounts', app(OrderRepository::class)->statusCounts());
             $view->with('notify', app(\App\Repositories\NotificationRepository::class)->summary());
+            // Complaints still to handle (received / on review), for the menu badge — once the migration has run.
+            $view->with('openComplaints', \Illuminate\Support\Facades\Schema::hasTable('complaints')
+                ? \App\Support\ModelCache::remember(\App\Support\ModelCache::COMPLAINTS, 'open-count', fn () => \App\Models\Complaint::whereIn('status', \App\Models\Complaint::OPEN)->count(), 600)
+                : 0);
         });
     }
 }

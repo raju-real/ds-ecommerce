@@ -33,6 +33,7 @@
                     <li><a href="{{ route('products.index') }}">All Products</a></li>
                     <li><a href="{{ route('products.index', ['sort' => 'discount']) }}">Hot Deals</a></li>
                     <li><a href="{{ route('track') }}">Track Order</a></li>
+                    <li><a href="{{ route('complaint') }}">Complaint</a></li>
                     @if($hasBlog)<li><a href="{{ route('blog.index') }}">Blog</a></li>@endif
                     <li><a href="{{ route('checkout') }}">Checkout</a></li>
                 </ul>

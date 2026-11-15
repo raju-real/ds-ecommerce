@@ -57,6 +57,33 @@
         </div>
     </div>
 
+    {{-- Open complaints (Customers → Complaints) --}}
+    <div class="card mb-4" id="dashComplaints">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5><i class="bi bi-megaphone me-1 text-danger"></i> Open complaints <span class="badge {{ $openComplaints ? 'bg-danger' : 'bg-success' }} ms-1">{{ $openComplaints ?? 0 }}</span></h5>
+            <a href="{{ route('admin.complaints.index') }}" class="small">All complaints <i class="bi bi-arrow-right"></i></a>
+        </div>
+        @if($complaints->isEmpty())
+            <div class="card-body small text-muted"><i class="bi bi-check-circle text-success me-1"></i>No open complaints.</div>
+        @else
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <tbody>
+                        @foreach($complaints as $c)
+                            <tr>
+                                <td style="width: 90px"><a href="{{ route('admin.complaints.show', $c->unique_id) }}" class="fw-bold">#{{ $c->complaint_no }}</a></td>
+                                <td class="small" style="width: 200px"><div class="fw-semibold">{{ $c->name }}</div><div class="text-muted">{{ $c->mobile }}</div></td>
+                                <td class="small">{{ \Illuminate\Support\Str::limit($c->message, 110) }}</td>
+                                <td style="width: 110px"><span class="badge badge-soft-{{ $c->status_color }}">{{ $c->status_label }}</span></td>
+                                <td class="small text-muted text-nowrap" style="width: 110px">{{ $c->created_at->diffForHumans() }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </div>
+
     <div class="row g-3 mb-4">
         <div class="col-xl-8">
             <div class="card h-100">

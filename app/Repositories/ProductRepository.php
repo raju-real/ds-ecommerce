@@ -17,6 +17,16 @@ class ProductRepository
     protected const CARD_COLUMNS = ['id', 'unique_id', 'category_id', 'subcategory_id', 'brand_id', 'name', 'code', 'slug', 'short_description',
         'unit_price', 'discount_price', 'thumbnail', 'in_stock', 'is_featured', 'created_at'];
 
+    /** Card columns + the review stars (rating_avg / rating_count) once the reviews migration has run. */
+    public static function cardColumns(): array
+    {
+        static $cols = null;
+
+        return $cols ??= \Illuminate\Support\Facades\Schema::hasColumn('products', 'rating_count')
+            ? array_merge(self::CARD_COLUMNS, ['rating_avg', 'rating_count'])
+            : self::CARD_COLUMNS;
+    }
+
     public const SORTS = [
         'latest' => 'Newest first',
         'price_asc' => 'Price: Low to High',
@@ -168,7 +178,7 @@ class ProductRepository
         $key = 'admin:list:v3:'.ModelCache::hash($filters + ['page' => request('page', 1)]);
 
         return ModelCache::rememberList([ModelCache::PRODUCTS], $key, fn () => Product::query()
-            ->select(array_merge(self::CARD_COLUMNS, ['vendor_id', 'drop_shipping_price', 'is_active', 'meta_image', 'updated_at']))
+            ->select(array_merge(self::cardColumns(), ['vendor_id', 'drop_shipping_price', 'is_active', 'meta_image', 'updated_at']))
             // SEO status column: only the lengths, not the texts, to keep the cached page light.
             ->selectRaw("CHAR_LENGTH(TRIM(COALESCE(meta_title, ''))) as seo_title_len, CHAR_LENGTH(TRIM(COALESCE(meta_description, ''))) as seo_desc_len, IF(TRIM(COALESCE(meta_keywords, '')) = '', 0, CHAR_LENGTH(meta_keywords) - CHAR_LENGTH(REPLACE(meta_keywords, ',', '')) + 1) as seo_kw_count")
             ->with(['category:id,name', 'subcategory:id,name', 'vendor:id,name', 'brand:id,name'])
@@ -295,6 +305,6 @@ class ProductRepository
 
     protected function cardQuery()
     {
-        return Product::query()->select(self::CARD_COLUMNS)->where('is_active', true);
+        return Product::query()->select(self::cardColumns())->where('is_active', true);
     }
 }
